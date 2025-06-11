@@ -13,6 +13,7 @@ import LogoutPage from "./pages/LogoutPage.jsx";
 import AuthLayout from "./components/authLayout.jsx";
 import CustomerHomePage from "./pages/CustomerHomePage.jsx";
 import WorkerHomePage from "./pages/WorkerHomePage.jsx";
+import IntegrationTestPage from "./pages/IntegrationTestPage.jsx";
 import { useSelector } from "react-redux";
 
 // Dashboard redirect component
@@ -53,6 +54,14 @@ function App() {
           element={
             <AuthLayout>
               <DashboardRedirect />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/test-integration"
+          element={
+            <AuthLayout>
+              <IntegrationTestPage />
             </AuthLayout>
           }
         />
