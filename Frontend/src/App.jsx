@@ -13,66 +13,121 @@ import LogoutPage from "./pages/LogoutPage.jsx";
 import AuthLayout from "./components/authLayout.jsx";
 import CustomerHomePage from "./pages/CustomerHomePage.jsx";
 import WorkerHomePage from "./pages/WorkerHomePage.jsx";
+import { useSelector } from "react-redux";
+
+// Dashboard redirect component
+function DashboardRedirect() {
+  const { userInfo } = useSelector((state) => state.user);
+
+  if (userInfo?.role === "customer") {
+    return <CustomerHomePage />;
+  } else if (userInfo?.role === "worker") {
+    return <WorkerHomePage />;
+  } else {
+    return <LandingPage />;
+  }
+}
 
 function App() {
   return (
     <div>
       <Routes>
-        <Route path="/" element={
-          <AuthLayout authentication={false}>
-            <LandingPage />
-          </AuthLayout>
-        } />
-        <Route path="/home" element={
-          <AuthLayout authentication={false}>
-            <LandingPage />
-          </AuthLayout>
-        } />
-        <Route path="/customer-home" element={
-          <AuthLayout>
-            <CustomerHomePage />
-          </AuthLayout>
-        } />
-        <Route path="/worker-home" element={
-          <AuthLayout>
-            <WorkerHomePage />
-          </AuthLayout>
-        } />
-        <Route path="/check-phone-number" element={
-          <AuthLayout authentication={false}>
-            <CheckPhoneNumber />
-          </AuthLayout>
-        } />
-        <Route path="/register" element={
-          <AuthLayout authentication={false}>
-            <CheckPhoneNumber />
-          </AuthLayout>
-        } />
-        <Route path="/register-option" element={
-          <AuthLayout authentication={false}>
-            <RegisterOption />
-          </AuthLayout>
-        } />
-        <Route path="/register-customer" element={
-          <AuthLayout authentication={false}>
-            <RegisterCustomer />
-          </AuthLayout>
-        } />
-        <Route path="/register-worker" element={
-          <AuthLayout authentication={false}>
-            <RegisterWorker />
-          </AuthLayout>
-        } /> 
-        <Route path="/login" element={
-          <AuthLayout authentication={false}>
-            <LoginPage />
-          </AuthLayout>
-        } />
-        <Route path="/logout" element={
-          <AuthLayout authentication>
-            <LogoutPage />
-          </AuthLayout>
-        } />
+        <Route
+          path="/"
+          element={
+            <AuthLayout authentication={false}>
+              <LandingPage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/home"
+          element={
+            <AuthLayout authentication={false}>
+              <LandingPage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <AuthLayout>
+              <DashboardRedirect />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/customer-home"
+          element={
+            <AuthLayout>
+              <CustomerHomePage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/worker-home"
+          element={
+            <AuthLayout>
+              <WorkerHomePage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/check-phone-number"
+          element={
+            <AuthLayout authentication={false}>
+              <CheckPhoneNumber />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <AuthLayout authentication={false}>
+              <CheckPhoneNumber />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/register-option"
+          element={
+            <AuthLayout authentication={false}>
+              <RegisterOption />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/register-customer"
+          element={
+            <AuthLayout authentication={false}>
+              <RegisterCustomer />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/register-worker"
+          element={
+            <AuthLayout authentication={false}>
+              <RegisterWorker />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <AuthLayout authentication={false}>
+              <LoginPage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/logout"
+          element={
+            <AuthLayout authentication>
+              <LogoutPage />
+            </AuthLayout>
+          }
+        />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/how-it-works" element={<HowItWorks />} />
         <Route path="/services" element={<Services />} />
