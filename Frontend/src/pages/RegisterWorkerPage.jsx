@@ -49,39 +49,17 @@ export default function RegisterWorker() {
     try {
       const completeData = { ...formData, ...data };
 
-      const formPayload = new FormData();
+      // Extract photo file if present
+      const photoFile = completeData.photo?.[0] || null;
+      delete completeData.photo; // Remove from data object
 
-      for (const key in completeData) {
-        if (key === "photo" && completeData[key]?.[0]) {
-          formPayload.append(key, completeData[key][0]);
-        } else if (key === "availabilityTimes") {
-          formPayload.append(key, JSON.stringify(completeData[key]));
-        } else if (key === "address") {
-          for (const field in completeData.address) {
-            formPayload.append(
-              `address[${field}]`,
-              completeData.address[field],
-            );
-          }
-        } else {
-          formPayload.append(key, completeData[key]);
-        }
-      }
+      const result = await userService.register(completeData, photoFile);
 
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/user/register`,
-        formPayload,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-          withCredentials: true,
-        },
-      );
-
-      if (response.status === 201) {
-        dispatch(setUserInfo(response.data));
+      if (result.success) {
+        dispatch(setUserInfo(result.data));
         navigate("/worker-home");
       } else {
-        alert("Registration failed");
+        alert(result.message || "Registration failed");
       }
     } catch (error) {
       console.error("Error during registration:", error);
