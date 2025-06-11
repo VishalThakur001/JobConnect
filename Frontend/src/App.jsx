@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import { useAppInitialization } from "./hooks/useAppInitialization";
 import LandingPage from "./pages/LandingPage.jsx";
 import CheckPhoneNumber from "./pages/CheckPhoneNumberPage.jsx";
 import RegisterOption from "./pages/RegistrationOptionsPage.jsx";
@@ -30,6 +31,9 @@ function DashboardRedirect() {
 }
 
 function App() {
+  // Initialize app and connect with backend
+  const { isAuthenticated, userRole } = useAppInitialization();
+
   return (
     <div>
       <Routes>
