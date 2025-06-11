@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import { setUserInfo } from "../features/userSlice";
-import axios from "axios";
+import { userService } from "../services/userService";
 import { useDispatch } from "react-redux";
 
 export default function RegisterCustomer() {
@@ -43,17 +43,24 @@ export default function RegisterCustomer() {
           formPayload.append(key, completeData[key][0]);
         } else if (key === "address") {
           for (const field in completeData.address) {
-            formPayload.append(`address[${field}]`, completeData.address[field]);
+            formPayload.append(
+              `address[${field}]`,
+              completeData.address[field],
+            );
           }
         } else {
           formPayload.append(key, completeData[key]);
         }
       }
 
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/user/register`, formPayload, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/user/register`,
+        formPayload,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        },
+      );
 
       if (response.status === 201) {
         dispatch(setUserInfo(response.data));
@@ -72,12 +79,18 @@ export default function RegisterCustomer() {
       <Navbar />
       <div className="min-h-screen flex items-center justify-center bg-orange-50 p-4">
         <form
-          onSubmit={handleSubmit(showPassword ? onFinalSubmit : onInitialSubmit)}
+          onSubmit={handleSubmit(
+            showPassword ? onFinalSubmit : onInitialSubmit,
+          )}
           className="bg-white p-8 rounded-2xl shadow-md max-w-md w-full"
         >
-          <h2 className="text-2xl font-bold mb-6 text-orange-500">Customer Registration</h2>
+          <h2 className="text-2xl font-bold mb-6 text-orange-500">
+            Customer Registration
+          </h2>
 
-          <label className="block text-left mb-1 text-sm font-medium">Phone Number</label>
+          <label className="block text-left mb-1 text-sm font-medium">
+            Phone Number
+          </label>
           <input
             type="text"
             value={phoneNumber}
@@ -87,32 +100,47 @@ export default function RegisterCustomer() {
 
           {!showPassword && (
             <>
-              <label className="block text-left mb-1 text-sm font-medium">Full Name</label>
+              <label className="block text-left mb-1 text-sm font-medium">
+                Full Name
+              </label>
               <input
                 {...register("fullName", { required: "Full name is required" })}
                 className="w-full p-3 mb-1 border rounded-xl"
                 placeholder="Enter your full name"
               />
               {errors.fullName && (
-                <p className="text-red-500 text-sm mb-2">{errors.fullName.message}</p>
+                <p className="text-red-500 text-sm mb-2">
+                  {errors.fullName.message}
+                </p>
               )}
 
-              <label className="block text-left mb-1 text-sm font-medium">Email</label>
+              <label className="block text-left mb-1 text-sm font-medium">
+                Email
+              </label>
               <input
                 {...register("email", {
                   required: "Email is required",
-                  pattern: { value: /^\S+@\S+$/, message: "Invalid email format" },
+                  pattern: {
+                    value: /^\S+@\S+$/,
+                    message: "Invalid email format",
+                  },
                 })}
                 className="w-full p-3 mb-1 border rounded-xl"
                 placeholder="Enter your email"
               />
               {errors.email && (
-                <p className="text-red-500 text-sm mb-2">{errors.email.message}</p>
+                <p className="text-red-500 text-sm mb-2">
+                  {errors.email.message}
+                </p>
               )}
 
-              <label className="block text-left mb-1 text-sm font-medium">Street</label>
+              <label className="block text-left mb-1 text-sm font-medium">
+                Street
+              </label>
               <input
-                {...register("address.street", { required: "Street is required" })}
+                {...register("address.street", {
+                  required: "Street is required",
+                })}
                 className="w-full p-3 mb-1 border rounded-xl"
                 placeholder="Enter street address"
               />
@@ -122,7 +150,9 @@ export default function RegisterCustomer() {
                 </p>
               )}
 
-              <label className="block text-left mb-1 text-sm font-medium">City</label>
+              <label className="block text-left mb-1 text-sm font-medium">
+                City
+              </label>
               <input
                 {...register("address.city", { required: "City is required" })}
                 className="w-full p-3 mb-1 border rounded-xl"
@@ -134,9 +164,13 @@ export default function RegisterCustomer() {
                 </p>
               )}
 
-              <label className="block text-left mb-1 text-sm font-medium">State</label>
+              <label className="block text-left mb-1 text-sm font-medium">
+                State
+              </label>
               <input
-                {...register("address.state", { required: "State is required" })}
+                {...register("address.state", {
+                  required: "State is required",
+                })}
                 className="w-full p-3 mb-1 border rounded-xl"
                 placeholder="Enter state"
               />
@@ -146,9 +180,13 @@ export default function RegisterCustomer() {
                 </p>
               )}
 
-              <label className="block text-left mb-1 text-sm font-medium">Pincode</label>
+              <label className="block text-left mb-1 text-sm font-medium">
+                Pincode
+              </label>
               <input
-                {...register("address.pincode", { required: "Pincode is required" })}
+                {...register("address.pincode", {
+                  required: "Pincode is required",
+                })}
                 className="w-full p-3 mb-1 border rounded-xl"
                 placeholder="Enter pincode"
               />
@@ -159,7 +197,8 @@ export default function RegisterCustomer() {
               )}
 
               <label className="block text-left mb-1 text-sm font-medium">
-                Profile Photo <span className="text-gray-500 text-sm">(optional)</span>
+                Profile Photo{" "}
+                <span className="text-gray-500 text-sm">(optional)</span>
               </label>
               <input
                 type="file"
@@ -172,7 +211,9 @@ export default function RegisterCustomer() {
 
           {showPassword && (
             <>
-              <label className="block text-left mb-1 text-sm font-medium">Password</label>
+              <label className="block text-left mb-1 text-sm font-medium">
+                Password
+              </label>
               <input
                 type="password"
                 {...register("password", {
@@ -183,7 +224,9 @@ export default function RegisterCustomer() {
                 placeholder="Create a password"
               />
               {errors.password && (
-                <p className="text-red-500 text-sm mb-2">{errors.password.message}</p>
+                <p className="text-red-500 text-sm mb-2">
+                  {errors.password.message}
+                </p>
               )}
             </>
           )}
