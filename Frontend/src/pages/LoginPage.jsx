@@ -1,9 +1,9 @@
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axios from "axios";
 import { useDispatch } from "react-redux";
 import { setUserInfo } from "../features/userSlice";
+import { userService } from "../services/userService";
 import Navbar from "../components/Navbar";
 
 export default function LoginPage() {
@@ -20,18 +20,23 @@ export default function LoginPage() {
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-      const modifiedData = { ...data, phoneNumber: `+91${data.phoneNumber}` };
+      const phoneNumber = `+91${data.phoneNumber}`;
 
+      const result = await userService.login(phoneNumber, data.password);
 
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/user/login`, modifiedData, {
-        withCredentials: true,
-      });
+      if (result.success) {
+        dispatch(setUserInfo(result.data));
 
-      if (response.status === 200) {
-        dispatch(setUserInfo(response.data));
-        navigate("/home");
+        // Redirect based on user role
+        if (result.data.user.role === "customer") {
+          navigate("/customer-home");
+        } else if (result.data.user.role === "worker") {
+          navigate("/worker-home");
+        } else {
+          navigate("/");
+        }
       } else {
-        alert("Invalid credentials");
+        alert(result.message || "Invalid credentials");
       }
     } catch (error) {
       console.error("Login error:", error);
@@ -51,7 +56,9 @@ export default function LoginPage() {
         >
           <h2 className="text-2xl font-bold mb-6 text-orange-500">Login</h2>
 
-          <label className="block text-left mb-1 text-sm font-medium">Phone Number</label>
+          <label className="block text-left mb-1 text-sm font-medium">
+            Phone Number
+          </label>
           <input
             type="tel"
             {...register("phoneNumber", {
@@ -65,10 +72,14 @@ export default function LoginPage() {
             placeholder="Enter your phone number"
           />
           {errors.phoneNumber && (
-            <p className="text-red-500 text-sm mb-2">{errors.phoneNumber.message}</p>
+            <p className="text-red-500 text-sm mb-2">
+              {errors.phoneNumber.message}
+            </p>
           )}
 
-          <label className="block text-left mb-1 text-sm font-medium">Password</label>
+          <label className="block text-left mb-1 text-sm font-medium">
+            Password
+          </label>
           <input
             type="password"
             {...register("password", {
@@ -82,7 +93,9 @@ export default function LoginPage() {
             placeholder="Enter your password"
           />
           {errors.password && (
-            <p className="text-red-500 text-sm mb-2">{errors.password.message}</p>
+            <p className="text-red-500 text-sm mb-2">
+              {errors.password.message}
+            </p>
           )}
 
           <button
@@ -94,10 +107,17 @@ export default function LoginPage() {
           >
             {loading ? "Logging in..." : "Login"}
           </button>
-          <p className="text-center mt-2">Don't have an account? <a href="/check-phone-number" className="text-orange-500 hover:underline">Register Now</a></p>
+          <p className="text-center mt-2">
+            Don't have an account?{" "}
+            <a
+              href="/check-phone-number"
+              className="text-orange-500 hover:underline"
+            >
+              Register Now
+            </a>
+          </p>
         </form>
       </div>
     </>
   );
 }
-
