@@ -11,13 +11,13 @@ import { authenticateUser } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 // Worker applies
-router.post("/:jobId", authenticateUser, applyForJob);
+router.post("/apply/:jobId", authenticateUser, applyForJob);
 
 // Worker: view all applications sent
-router.get("/my", authenticateUser, getMyApplications);
+router.get("/my-applications", authenticateUser, getMyApplications);
 
 // Customer: view applications for a job they posted
-router.get("/job/:jobId", authenticateUser, getApplicationsForCustomer);
+router.get("/job-applications/:jobId", authenticateUser, getApplicationsForCustomer);
 
 // Customer updates application status (accept/reject)
 router.put("/:applicationId", authenticateUser, updateApplicationStatus);

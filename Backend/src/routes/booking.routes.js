@@ -14,9 +14,9 @@ const router = express.Router();
 router.use(authenticateUser);
 
 // Booking management
-router.post("/request", createBookingFromJobApplication);
-router.get("/worker", getWorkerBookings);
-router.get("/customer", getCustomerBookings);
+router.post("/create-booking/:jobId/:applicatonId", createBookingFromJobApplication);
+router.get("/worker-bookings", getWorkerBookings);
+router.get("/customer-bookings", getCustomerBookings);
 router.get("/:bookingId", getBookingById);
 router.patch("/:bookingId/status", updateBookingStatus);
 
