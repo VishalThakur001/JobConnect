@@ -10,8 +10,8 @@ import { authenticateUser } from "../middlewares/auth.middleware.js";
 const router = express.Router();
 
 router.post("/:bookingId/review", authenticateUser, submitReview);
-router.put("/:reviewId", authenticateUser, updateReview);
+router.put("/update-review/:reviewId", authenticateUser, updateReview);
 router.delete("/:reviewId", authenticateUser, deleteReview);
-router.get("/my", authenticateUser, getMyReviews);
+router.get("/my-reviews", authenticateUser, getMyReviews);
 
 export default router;

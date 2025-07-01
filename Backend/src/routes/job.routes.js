@@ -12,11 +12,11 @@ import { authenticateUser } from "../middlewares/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/", authenticateUser, createJobPost);
-router.get("/my", authenticateUser, getMyJobPosts);
+router.post("/create", authenticateUser, createJobPost);
+router.get("/my-posts", authenticateUser, getMyJobPosts);
 router.get("/:jobId", authenticateUser, getJobById);
-router.put("/:jobId", authenticateUser, updateJobPost);
-router.delete("/:jobId", authenticateUser, deleteJobPost);
+router.put("/update/:jobId", authenticateUser, updateJobPost);
+router.delete("/delete/:jobId", authenticateUser, deleteJobPost);
 
 // Worker: repost job
 router.post("/:jobId/repost", authenticateUser, repostJob);
