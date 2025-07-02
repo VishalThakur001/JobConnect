@@ -25,7 +25,7 @@ app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/jobs", jobRoutes);
 app.use("/api/v1/bookings", bookingRoutes);
-app.use("/api/v1/applications", jobApplicationRoutes);
+app.use("/api/v1/job-applications", jobApplicationRoutes);
 app.use("/api/v1/reviews", reviewRoutes);
 
 export { app }
