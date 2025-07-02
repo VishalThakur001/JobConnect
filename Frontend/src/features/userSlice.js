@@ -13,6 +13,13 @@ const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
+    setCredentials: (state, action) => {
+      const { user, accessToken } = action.payload;
+      state.user = user;
+      state.accessToken = accessToken;
+      state.role = user?.role || null;
+      state.isAuthenticated = true;
+    },
     setUser: (state, action) => {
       const { user, accessToken } = action.payload;
       state.user = user;
@@ -23,8 +30,17 @@ const userSlice = createSlice({
     updateUser: (state, action) => {
       state.user = { ...state.user, ...action.payload };
     },
+    setAccessToken: (state, action) => {
+      state.accessToken = action.payload;
+    },
     updateAccessToken: (state, action) => {
       state.accessToken = action.payload;
+    },
+    clearUserInfo: (state) => {
+      state.user = null;
+      state.accessToken = null;
+      state.role = null;
+      state.isAuthenticated = false;
     },
     logout: (state) => {
       state.user = null;
@@ -43,4 +59,12 @@ const persistConfig = {
 
 export const userReducer = persistReducer(persistConfig, userSlice.reducer);
 
-export const { setUser, updateUser, updateAccessToken, logout } = userSlice.actions;
+export const {
+  setCredentials,
+  setUser,
+  updateUser,
+  setAccessToken,
+  updateAccessToken,
+  clearUserInfo,
+  logout,
+} = userSlice.actions;
