@@ -69,39 +69,49 @@ export const changePassword = async (req, res) => {
 
 export const updateAccountDetails = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const { fullName, email, role, profession } = req.body;
+    const userId = req.user._id;
+    const role = req.user.role;
+    const { fullName, email, profession } = req.body;
 
-    const address = req.body.address;
-    const { street, city, state, pincode } = JSON.parse(
-      JSON.stringify(address),
-    );
+    let updatedFields = {};
 
-    if(address) {
+    // Add personal fields if present
+    if (fullName) updatedFields.fullName = fullName;
+    if (email) updatedFields.email = email;
+    if (profession) updatedFields.profession = profession;
+
+    // Handle address only if provided
+    if (req.body.address) {
+      const { street, city, state, pincode } = req.body.address;
+
       if (!street || !city || !state || !pincode) {
         return res.status(400).json({
           message: "All address fields are required",
         });
       }
+
+      updatedFields.address = { street, city, state, pincode };
     }
 
-    let availabilityTimes = req.body.availabilityTimes;
-    if (role === "worker" && typeof availabilityTimes === "string" && availabilityTimes.length > 0) {
-      try {
-        availabilityTimes = JSON.parse(availabilityTimes);
-      } catch (e) {
-        return res.status(400).json({ message: "Invalid availability format" });
+    // Handle availabilityTimes only if provided and user is a worker
+    if (role === "worker" && req.body.availabilityTimes) {
+      let availabilityTimes = req.body.availabilityTimes;
+
+      if (typeof availabilityTimes === "string") {
+        try {
+          availabilityTimes = JSON.parse(availabilityTimes);
+        } catch (e) {
+          return res.status(400).json({ message: "Invalid availability format" });
+        }
       }
+
+      updatedFields.availabilityTimes = availabilityTimes;
     }
 
-    const updatedFields = {
-      ...(fullName && { fullName }),
-      ...(email && { email }),
-      ...(address && { address }),
-      ...(role && { role }),
-      ...(profession && { profession }),
-      ...(availabilityTimes && { availabilityTimes }),
-    };
+    // No fields to update
+    if (Object.keys(updatedFields).length === 0) {
+      return res.status(400).json({ message: "No valid fields provided for update" });
+    }
 
     const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, {
       new: true,

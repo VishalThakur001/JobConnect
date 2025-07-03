@@ -20,6 +20,15 @@ export {
   useChangeProfilePhoto,
 } from "./useUser";
 
+// Profile hooks
+export {
+  useGetProfile,
+  useUpdateProfile,
+  useChangePassword as useProfileChangePassword,
+  useUpdateProfilePhoto as useProfileUpdatePhoto,
+  useUpdateLocation as useProfileUpdateLocation,
+} from "./useProfile";
+
 // Job hooks
 export {
   jobKeys,

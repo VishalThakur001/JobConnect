@@ -9,14 +9,15 @@ import LoginPage from "./pages/LoginPage";
 import LogoutPage from "./pages/LogoutPage";
 import CustomerHomePage from "./pages/CustomerHomePage";
 import WorkerHomePage from "./pages/WorkerHomePage";
-import CheckPhoneAvailabilityPage from "./pages/registration/CheckPhoneAvailabilityPage";
-import VerifyOTPPage from "./pages/registration/VerifyOTPPage";
-import ChooseRolePage from "./pages/registration/ChooseRolePage";
-import RegisterWorkerPage from "./pages/registration/RegisterWorkerPage";
-import RegisterCustomerPage from "./pages/registration/RegisterCustomerPage";
+import CheckPhoneAvailabilityPage from "./pages/Registration/CheckPhoneAvailabilityPage";
+import VerifyOTPPage from "./pages/Registration/VerifyOtpPage";
+import ChooseRolePage from "./pages/Registration/ChooseRolePage";
+import RegisterWorkerPage from "./pages/Registration/RegisterWorkerPage";
+import RegisterCustomerPage from "./pages/Registration/RegisterCustomerPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import AboutPage from "./pages/AboutPage";
-import AuthLayout from "./components/AuthLayout";
+import ProfilePage from "./pages/ProfilePage";
+import AuthLayout from "./components/authLayout";
 
 function App() {
   return (
@@ -26,51 +27,104 @@ function App() {
         {/* Public Routes (Unauthenticated Only) */}
         <Route
           path="/"
-          element={<AuthLayout authentication={false}><LandingPage /></AuthLayout>}
+          element={
+            <AuthLayout authentication={false}>
+              <LandingPage />
+            </AuthLayout>
+          }
         />
         <Route
           path="/login"
-          element={<AuthLayout authentication={false}><LoginPage /></AuthLayout>}
+          element={
+            <AuthLayout authentication={false}>
+              <LoginPage />
+            </AuthLayout>
+          }
         />
-        <Route
-          path="/logout"
-          element={<LogoutPage />}
-        />
+        <Route path="/logout" element={<LogoutPage />} />
 
         {/* Registration Flow - Only accessible if not logged in */}
         <Route
           path="/register"
-          element={<AuthLayout authentication={false}><CheckPhoneAvailabilityPage /></AuthLayout>}
+          element={
+            <AuthLayout authentication={false}>
+              <CheckPhoneAvailabilityPage />
+            </AuthLayout>
+          }
         />
         <Route
           path="/register/check-phone"
-          element={<AuthLayout authentication={false}><CheckPhoneAvailabilityPage /></AuthLayout>}
+          element={
+            <AuthLayout authentication={false}>
+              <CheckPhoneAvailabilityPage />
+            </AuthLayout>
+          }
         />
         <Route
           path="/register/verify-otp"
-          element={<AuthLayout authentication={false}><VerifyOTPPage /></AuthLayout>}
+          element={
+            <AuthLayout authentication={false}>
+              <VerifyOTPPage />
+            </AuthLayout>
+          }
         />
         <Route
           path="/register/choose-role"
-          element={<AuthLayout authentication={false}><ChooseRolePage /></AuthLayout>}
+          element={
+            <AuthLayout authentication={false}>
+              <ChooseRolePage />
+            </AuthLayout>
+          }
         />
         <Route
           path="/register/worker"
-          element={<AuthLayout authentication={false}><RegisterWorkerPage /></AuthLayout>}
+          element={
+            <AuthLayout authentication={false}>
+              <RegisterWorkerPage />
+            </AuthLayout>
+          }
         />
         <Route
           path="/register/customer"
-          element={<AuthLayout authentication={false}><RegisterCustomerPage /></AuthLayout>}
+          element={
+            <AuthLayout authentication={false}>
+              <RegisterCustomerPage />
+            </AuthLayout>
+          }
         />
 
         {/* Authenticated Routes */}
         <Route
           path="/customer/home"
-          element={<AuthLayout><CustomerHomePage /></AuthLayout>}
+          element={
+            <AuthLayout>
+              <CustomerHomePage />
+            </AuthLayout>
+          }
         />
         <Route
           path="/worker/home"
-          element={<AuthLayout><WorkerHomePage /></AuthLayout>}
+          element={
+            <AuthLayout>
+              <WorkerHomePage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/worker/profile"
+          element={
+            <AuthLayout>
+              <ProfilePage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/customer/profile"
+          element={
+            <AuthLayout>
+              <ProfilePage />
+            </AuthLayout>
+          }
         />
         <Route
           path="/dashboard"
@@ -83,11 +137,19 @@ function App() {
         />
         <Route
           path="/how-it-works"
-          element={<AuthLayout authentication={false}><HowItWorksPage /></AuthLayout>}
+          element={
+            <AuthLayout authentication={false}>
+              <HowItWorksPage />
+            </AuthLayout>
+          }
         />
         <Route
           path="/about"
-          element={<AuthLayout authentication={false}><AboutPage /></AuthLayout>}
+          element={
+            <AuthLayout authentication={false}>
+              <AboutPage />
+            </AuthLayout>
+          }
         />
       </Routes>
     </div>
