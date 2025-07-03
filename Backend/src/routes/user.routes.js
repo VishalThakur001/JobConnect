@@ -3,10 +3,10 @@ import {
   getCurrentUser,
   changePassword,
   updateAccountDetails,
-  updateProfilePhoto,
   updateUserLocation,
+  updateProfilePhoto,
   getWorkerProfile,
-  findNearbyWorkers,
+  findNearbyWorkers
 } from "../controllers/user.controller.js";
 import { authenticateUser } from "../middlewares/auth.middleware.js";
 import { upload } from "../middlewares/multer.middleware.js";

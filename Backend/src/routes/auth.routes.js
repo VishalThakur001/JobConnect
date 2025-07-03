@@ -3,13 +3,12 @@ import {
   checkAvailability,
   sendOtpToPhone,
   verifyOtp,
-  loginUser,
   registerUser,
+  loginUser,
   logoutUser,
   refreshAccessToken,
 } from "../controllers/auth.controller.js";
 import { authenticateUser } from "../middlewares/auth.middleware.js";
-import { upload } from "../middlewares/multer.middleware.js";
 
 const router = express.Router();
 
