@@ -31,12 +31,35 @@ export default function Navbar() {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  // Simple navigation items for all users
-  const navigationItems = [
-    { name: "Home", href: "/" },
-    { name: "About", href: "/about" },
-    { name: "How it Works", href: "/how-it-works" },
-  ];
+  // Navigation items based on authentication and role
+  const getNavigationItems = () => {
+    const baseItems = [
+      { name: "Home", href: "/" },
+      { name: "About", href: "/about" },
+      { name: "How it Works", href: "/how-it-works" },
+    ];
+
+    if (isAuthenticated) {
+      if (role === "customer") {
+        return [
+          { name: "Dashboard", href: "/customer/home" },
+          { name: "Post Job", href: "/customer/post-job" },
+          { name: "My Jobs", href: "/customer/jobs" },
+          ...baseItems.slice(1), // Keep About and How it Works
+        ];
+      } else if (role === "worker") {
+        return [
+          { name: "Dashboard", href: "/worker/home" },
+          { name: "Find Jobs", href: "/worker/find-jobs" },
+          ...baseItems.slice(1), // Keep About and How it Works
+        ];
+      }
+    }
+
+    return baseItems;
+  };
+
+  const navigationItems = getNavigationItems();
 
   return (
     <nav className="border-b border-border sticky top-0 z-50 backdrop-blur-sm bg-background/80">

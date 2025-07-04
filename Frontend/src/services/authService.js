@@ -1,4 +1,4 @@
-import axiosInstance from "@/utils/axiosInterceptor";
+import axiosInstance from "../utils/axiosInterceptor";
 
 const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/auth`;
 

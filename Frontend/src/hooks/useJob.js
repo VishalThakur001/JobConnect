@@ -1,11 +1,11 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import jobService from '@/services/jobService';
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import jobService from "../services/jobService";
 
 // Unique keys for each feature
 const JOB_KEYS = {
-  allNearby: 'nearbyJobs',
-  myJobs: 'myJobPosts',
-  jobById: (id) => ['job', id],
+  allNearby: "nearbyJobs",
+  myJobs: "myJobPosts",
+  jobById: (id) => ["job", id],
 };
 
 // Fetch nearby jobs

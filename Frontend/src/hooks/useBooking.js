@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import bookingService from "@/services/bookingService";
+import bookingService from "../services/bookingService";
 import toast from "react-hot-toast";
 
 // QUERY KEYS

@@ -1,4 +1,4 @@
-import axiosInstance from "@/utils/axiosInterceptor";
+import axiosInstance from "../utils/axiosInterceptor";
 
 const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/jobs`;
 
@@ -34,7 +34,9 @@ export const jobService = {
       if (filters.limit) params.append("limit", filters.limit);
       if (filters.sortBy) params.append("sortBy", filters.sortBy);
 
-      const response = await axiosInstance.get(`${BASE_URL}/nearby?${params.toString()}`);
+      const response = await axiosInstance.get(
+        `${BASE_URL}/nearby/all?${params.toString()}`
+      );
       return {
         success: true,
         data: response.data.jobs || [],
@@ -64,7 +66,8 @@ export const jobService = {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch your job posts",
+        message:
+          error.response?.data?.message || "Failed to fetch your job posts",
         error: error.response?.data,
       };
     }
@@ -91,7 +94,10 @@ export const jobService = {
   // Update a job post (only if still open)
   updateJobPost: async (jobId, updates) => {
     try {
-      const response = await axiosInstance.put(`${BASE_URL}/update/${jobId}`, updates);
+      const response = await axiosInstance.put(
+        `${BASE_URL}/update/${jobId}`,
+        updates,
+      );
       return {
         success: true,
         data: response.data.job,
@@ -109,7 +115,9 @@ export const jobService = {
   // Delete a job post
   deleteJobPost: async (jobId) => {
     try {
-      const response = await axiosInstance.delete(`${BASE_URL}/delete/${jobId}`);
+      const response = await axiosInstance.delete(
+        `${BASE_URL}/delete/${jobId}`,
+      );
       return {
         success: true,
         message: response.data.message,

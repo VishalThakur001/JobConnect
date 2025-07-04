@@ -18,6 +18,7 @@ import {
   ToggleLeft,
   ToggleRight,
   Bell,
+  Search,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import {
@@ -190,6 +191,12 @@ export default function WorkerHomePage() {
                   )}
                 </button>
               </div>
+              <Button asChild>
+                <Link to="/worker/find-jobs">
+                  <Search className="w-4 h-4 mr-2" />
+                  Find Jobs
+                </Link>
+              </Button>
               <Button variant="outline" asChild>
                 <Link to="/worker/profile">
                   <Settings className="w-4 h-4 mr-2" />
@@ -424,6 +431,16 @@ export default function WorkerHomePage() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link to="/worker/find-jobs">
+                    <Search className="w-4 h-4 mr-2" />
+                    Find Jobs
+                  </Link>
+                </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <Edit className="w-4 h-4 mr-2" />
                   Update Services

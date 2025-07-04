@@ -6,7 +6,10 @@ export const jobApplicationService = {
   // Worker applies to a job
   applyToJob: async (jobId, applicationData) => {
     try {
-      const response = await axiosInstance.post(`${BASE_URL}/apply/${jobId}`, applicationData);
+      const response = await axiosInstance.post(
+        `${BASE_URL}/apply/${jobId}`,
+        applicationData,
+      );
       return {
         success: true,
         data: response.data.application,
@@ -33,7 +36,8 @@ export const jobApplicationService = {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch your applications",
+        message:
+          error.response?.data?.message || "Failed to fetch your applications",
         error: error.response?.data,
       };
     }
@@ -42,7 +46,9 @@ export const jobApplicationService = {
   // Customer gets all applications for one of their jobs
   getApplicationsForJob: async (jobId) => {
     try {
-      const response = await axiosInstance.get(`${BASE_URL}/job-applications/${jobId}`);
+      const response = await axiosInstance.get(
+        `${BASE_URL}/job-applications/${jobId}`,
+      );
       return {
         success: true,
         data: response.data.applications || [],
@@ -51,7 +57,9 @@ export const jobApplicationService = {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to fetch applications for job",
+        message:
+          error.response?.data?.message ||
+          "Failed to fetch applications for job",
         error: error.response?.data,
       };
     }
@@ -60,7 +68,9 @@ export const jobApplicationService = {
   // Customer updates application status (accept/reject)
   updateApplicationStatus: async (applicationId, status) => {
     try {
-      const response = await axiosInstance.put(`${BASE_URL}/${applicationId}`, { status });
+      const response = await axiosInstance.put(`${BASE_URL}/${applicationId}`, {
+        status,
+      });
       return {
         success: true,
         message: response.data.message,
@@ -68,7 +78,9 @@ export const jobApplicationService = {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to update application status",
+        message:
+          error.response?.data?.message ||
+          "Failed to update application status",
         error: error.response?.data,
       };
     }
@@ -77,7 +89,9 @@ export const jobApplicationService = {
   // Worker or Customer confirms application (to trigger booking)
   confirmApplication: async (applicationId) => {
     try {
-      const response = await axiosInstance.put(`${BASE_URL}/${applicationId}/accept`);
+      const response = await axiosInstance.put(
+        `${BASE_URL}/${applicationId}/accept`,
+      );
       return {
         success: true,
         data: response.data.application,
@@ -86,7 +100,8 @@ export const jobApplicationService = {
     } catch (error) {
       return {
         success: false,
-        message: error.response?.data?.message || "Failed to confirm application",
+        message:
+          error.response?.data?.message || "Failed to confirm application",
         error: error.response?.data,
       };
     }

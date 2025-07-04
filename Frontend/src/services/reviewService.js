@@ -1,6 +1,6 @@
 // src/services/reviewService.js
 
-import axiosInstance from "@/utils/axiosInterceptor";
+import axiosInstance from "../utils/axiosInterceptor";
 
 const BASE_URL = `${import.meta.env.VITE_API_BASE_URL}/reviews`;
 
@@ -8,7 +8,10 @@ const reviewService = {
   // Submit a new review for a completed booking
   submitReview: async (bookingId, reviewData) => {
     try {
-      const response = await axiosInstance.post(`${BASE_URL}/${bookingId}/review`, reviewData);
+      const response = await axiosInstance.post(
+        `${BASE_URL}/${bookingId}/review`,
+        reviewData,
+      );
       return {
         success: true,
         data: response.data.review,
@@ -26,7 +29,10 @@ const reviewService = {
   // Update an existing review
   updateReview: async (reviewId, updatedData) => {
     try {
-      const response = await axiosInstance.put(`${BASE_URL}/update-review/${reviewId}`, updatedData);
+      const response = await axiosInstance.put(
+        `${BASE_URL}/update-review/${reviewId}`,
+        updatedData,
+      );
       return {
         success: true,
         data: response.data.review,

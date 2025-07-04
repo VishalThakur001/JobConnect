@@ -17,6 +17,10 @@ import RegisterCustomerPage from "./pages/Registration/RegisterCustomerPage";
 import HowItWorksPage from "./pages/HowItWorksPage";
 import AboutPage from "./pages/AboutPage";
 import ProfilePage from "./pages/ProfilePage";
+import PostJobPage from "./pages/PostJobPage";
+import FindJobsPage from "./pages/FindJobsPage";
+import CustomerJobsPage from "./pages/CustomerJobsPage";
+import JobApplicationsPage from "./pages/JobApplicationsPage";
 import AuthLayout from "./components/authLayout";
 
 function App() {
@@ -127,6 +131,51 @@ function App() {
           }
         />
         <Route
+          path="/profile"
+          element={
+            <AuthLayout>
+              <ProfilePage />
+            </AuthLayout>
+          }
+        />
+
+        {/* Customer Job Management Routes */}
+        <Route
+          path="/customer/post-job"
+          element={
+            <AuthLayout>
+              <PostJobPage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/customer/jobs"
+          element={
+            <AuthLayout>
+              <CustomerJobsPage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/customer/jobs/:jobId/applications"
+          element={
+            <AuthLayout>
+              <JobApplicationsPage />
+            </AuthLayout>
+          }
+        />
+
+        {/* Worker Job Finding Routes */}
+        <Route
+          path="/worker/find-jobs"
+          element={
+            <AuthLayout>
+              <FindJobsPage />
+            </AuthLayout>
+          }
+        />
+
+        <Route
           path="/dashboard"
           element={
             <AuthLayout>
@@ -138,17 +187,13 @@ function App() {
         <Route
           path="/how-it-works"
           element={
-            <AuthLayout authentication={false}>
-              <HowItWorksPage />
-            </AuthLayout>
+            <HowItWorksPage />
           }
         />
         <Route
           path="/about"
           element={
-            <AuthLayout authentication={false}>
-              <AboutPage />
-            </AuthLayout>
+            <AboutPage />
           }
         />
       </Routes>

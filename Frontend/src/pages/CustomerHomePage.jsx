@@ -14,6 +14,8 @@ import {
   TrendingUp,
   CheckCircle,
   AlertCircle,
+  Settings,
+  Briefcase,
 } from "lucide-react";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
@@ -130,12 +132,20 @@ export default function CustomerHomePage() {
                 Find and manage your service bookings
               </p>
             </div>
-            <Button asChild>
-              <Link to="/book-service">
-                <Plus className="w-4 h-4 mr-2" />
-                Book Service
-              </Link>
-            </Button>
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" asChild>
+                <Link to="/profile">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link to="/customer/post-job">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Post Job
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -316,6 +326,26 @@ export default function CustomerHomePage() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link to="/customer/post-job">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Post New Job
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link to="/customer/jobs">
+                    <Briefcase className="w-4 h-4 mr-2" />
+                    Manage Jobs
+                  </Link>
+                </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <MessageCircle className="w-4 h-4 mr-2" />
                   Message Workers
@@ -324,9 +354,15 @@ export default function CustomerHomePage() {
                   <Heart className="w-4 h-4 mr-2" />
                   View Favorites
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <User className="w-4 h-4 mr-2" />
-                  Update Profile
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  asChild
+                >
+                  <Link to="/profile">
+                    <User className="w-4 h-4 mr-2" />
+                    Update Profile
+                  </Link>
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <Star className="w-4 h-4 mr-2" />
