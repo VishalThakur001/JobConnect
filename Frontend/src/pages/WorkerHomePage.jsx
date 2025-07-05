@@ -81,22 +81,32 @@ export default function WorkerHomePage() {
       amount: booking.amount,
     }));
 
+  // Calculate earnings for this week
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const thisWeekBookings = allBookings.filter(
+    (booking) =>
+      booking.status === "completed" &&
+      new Date(booking.scheduledDate) >= oneWeekAgo,
+  );
+  const thisWeekEarnings = thisWeekBookings.reduce(
+    (sum, booking) => sum + (booking.amount || 0),
+    0,
+  );
+
+  // Calculate completed jobs
+  const completedBookings = allBookings.filter((b) => b.status === "completed");
+  const completedJobsCount = completedBookings.length;
+
+  // Recent reviews data (placeholder until review endpoint is available)
   const recentReviews = [
     {
       id: 1,
-      customerName: "Sarah Wilson",
-      rating: 5,
-      comment: "Excellent work! Very professional and thorough cleaning.",
-      date: "2024-01-18",
-      service: "Home Cleaning",
-    },
-    {
-      id: 2,
-      customerName: "Mike Davis",
-      rating: 4,
-      comment: "Good service, arrived on time and completed the job well.",
-      date: "2024-01-16",
-      service: "Office Cleaning",
+      customerName: "Complete jobs to see reviews",
+      rating: 0,
+      comment: "Reviews from customers will appear here after completed jobs",
+      date: new Date().toLocaleDateString(),
+      service: "",
     },
   ];
 
