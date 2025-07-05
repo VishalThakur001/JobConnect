@@ -30,6 +30,7 @@ import {
 } from "../components/ui/card";
 import { cn } from "../utils/cn";
 import { useUpdateStatus } from "../hooks/useProfile";
+import { useWorkerBookings } from "../hooks/useBooking";
 import UserAvatar from "../components/UserAvatar";
 
 export default function WorkerHomePage() {
@@ -38,6 +39,10 @@ export default function WorkerHomePage() {
 
   // Use the actual user's availability status from Redux state
   const isAvailable = user?.isAvailable ?? true;
+
+  // Fetch real data using hooks
+  const { data: allBookings = [], isLoading: bookingsLoading } =
+    useWorkerBookings("");
 
   const handleAvailabilityToggle = async () => {
     try {
@@ -49,77 +54,90 @@ export default function WorkerHomePage() {
     }
   };
 
-  // Mock data - replace with real API calls
-  const todayBookings = [
-    {
-      id: 1,
-      customerName: "Alice Smith",
-      service: "Home Cleaning",
-      time: "10:00 AM - 12:00 PM",
-      address: "123 Main St, Downtown",
-      phone: "+1 234-567-8901",
-      status: "upcoming",
-      amount: 150,
-    },
-    {
-      id: 2,
-      customerName: "Bob Johnson",
-      service: "Kitchen Deep Clean",
-      time: "2:00 PM - 4:00 PM",
-      address: "456 Oak Ave, Midtown",
-      phone: "+1 234-567-8902",
-      status: "in-progress",
-      amount: 200,
-    },
-  ];
+  // Process today's bookings from real data
+  const today = new Date().toDateString();
+  const todayBookings = allBookings
+    .filter(
+      (booking) => new Date(booking.scheduledDate).toDateString() === today,
+    )
+    .slice(0, 3)
+    .map((booking) => ({
+      id: booking._id,
+      customerName: booking.customerId?.fullName || "Customer",
+      service:
+        booking.serviceCategory?.charAt(0).toUpperCase() +
+          booking.serviceCategory?.slice(1).replace("-", " ") || "Service",
+      time: new Date(booking.scheduledDate).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      address:
+        `${booking.customerId?.address?.street || ""}, ${booking.customerId?.address?.city || ""}`.replace(
+          /^, /,
+          "",
+        ),
+      phone: booking.customerId?.phoneNumber || "Not provided",
+      status: booking.status,
+      amount: booking.amount,
+    }));
 
+  // Calculate earnings for this week
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const thisWeekBookings = allBookings.filter(
+    (booking) =>
+      booking.status === "completed" &&
+      new Date(booking.scheduledDate) >= oneWeekAgo,
+  );
+  const thisWeekEarnings = thisWeekBookings.reduce(
+    (sum, booking) => sum + (booking.amount || 0),
+    0,
+  );
+
+  // Calculate completed jobs
+  const completedBookings = allBookings.filter((b) => b.status === "completed");
+  const completedJobsCount = completedBookings.length;
+
+  // Recent reviews data (placeholder until review endpoint is available)
   const recentReviews = [
     {
       id: 1,
-      customerName: "Sarah Wilson",
-      rating: 5,
-      comment: "Excellent work! Very professional and thorough cleaning.",
-      date: "2024-01-18",
-      service: "Home Cleaning",
-    },
-    {
-      id: 2,
-      customerName: "Mike Davis",
-      rating: 4,
-      comment: "Good service, arrived on time and completed the job well.",
-      date: "2024-01-16",
-      service: "Office Cleaning",
+      customerName: "Complete jobs to see reviews",
+      rating: 0,
+      comment: "Reviews from customers will appear here after completed jobs",
+      date: new Date().toLocaleDateString(),
+      service: "",
     },
   ];
 
   const stats = [
     {
       label: "Today's Bookings",
-      value: "3",
+      value: todayBookings.length.toString(),
       icon: Calendar,
       color: "text-blue-600",
-      change: "+2 from yesterday",
+      change: "scheduled for today",
     },
     {
       label: "This Week's Earnings",
-      value: "$1,250",
+      value: `₹${thisWeekEarnings.toLocaleString()}`,
       icon: DollarSign,
       color: "text-green-600",
-      change: "+15% from last week",
+      change: "from this week",
     },
     {
       label: "Average Rating",
-      value: "4.8",
+      value: "N/A",
       icon: Star,
       color: "text-yellow-600",
-      change: "based on 45 reviews",
+      change: "complete jobs for ratings",
     },
     {
       label: "Completed Jobs",
-      value: "124",
+      value: completedJobsCount.toString(),
       icon: CheckCircle,
       color: "text-purple-600",
-      change: "+8 this month",
+      change: "lifetime total",
     },
   ];
 
@@ -335,7 +353,14 @@ export default function WorkerHomePage() {
                 <CardDescription>Your bookings for today</CardDescription>
               </CardHeader>
               <CardContent>
-                {todayBookings.length > 0 ? (
+                {bookingsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">
+                      Loading today's bookings...
+                    </p>
+                  </div>
+                ) : todayBookings.length > 0 ? (
                   <div className="space-y-4">
                     {todayBookings.map((booking) => (
                       <div

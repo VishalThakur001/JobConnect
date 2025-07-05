@@ -28,67 +28,95 @@ import {
 } from "../components/ui/card";
 import { cn } from "../utils/cn";
 import UserAvatar from "../components/UserAvatar";
+import { useCustomerBookings } from "../hooks/useBooking";
+import { useMyJobPosts } from "../hooks/useJob";
+import { useMyReviews } from "../hooks/useReview";
 
 export default function CustomerHomePage() {
   const { user } = useSelector((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Mock data - replace with real API calls
-  const recentBookings = [
-    {
-      id: 1,
-      serviceName: "Home Cleaning",
-      workerName: "Sarah Johnson",
-      date: "2024-01-15",
-      time: "10:00 AM",
-      status: "completed",
-      rating: 5,
-      amount: 150,
-    },
-    {
-      id: 2,
-      serviceName: "Plumbing Repair",
-      workerName: "Mike Wilson",
-      date: "2024-01-20",
-      time: "2:00 PM",
-      status: "upcoming",
-      amount: 200,
-    },
-    {
-      id: 3,
-      serviceName: "Electrical Work",
-      workerName: "David Chen",
-      date: "2024-01-10",
-      time: "9:00 AM",
-      status: "in-progress",
-      amount: 180,
-    },
+  // Fetch real data using hooks
+  const { data: allBookings = [], isLoading: bookingsLoading } =
+    useCustomerBookings("");
+  const { data: jobsData, isLoading: jobsLoading } = useMyJobPosts(1, 100);
+  const { data: reviewsData = [], isLoading: reviewsLoading } = useMyReviews();
+
+  // Process bookings data
+  const recentBookings = allBookings.slice(0, 3).map((booking) => ({
+    id: booking._id,
+    serviceName:
+      booking.serviceCategory?.charAt(0).toUpperCase() +
+        booking.serviceCategory?.slice(1).replace("-", " ") || "Service",
+    workerName: booking.workerId?.fullName || "Worker",
+    date: new Date(booking.scheduledDate).toLocaleDateString(),
+    time: new Date(booking.scheduledDate).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    status: booking.status,
+    rating: booking.rating,
+    amount: booking.amount,
+  }));
+
+  // Popular services with actual counts
+  const serviceCategories = [
+    { key: "home-cleaner", name: "Home Cleaning", icon: "🏠" },
+    { key: "plumber", name: "Plumbing", icon: "🔧" },
+    { key: "electrician", name: "Electrical", icon: "⚡" },
+    { key: "carpenter", name: "Gardening", icon: "🌱" },
+    { key: "painter", name: "Moving", icon: "📦" },
+    { key: "mechanic", name: "Pet Care", icon: "🐕" },
   ];
 
-  const popularServices = [
-    { name: "Home Cleaning", icon: "🏠", bookings: 145 },
-    { name: "Plumbing", icon: "🔧", bookings: 98 },
-    { name: "Electrical", icon: "⚡", bookings: 87 },
-    { name: "Gardening", icon: "🌱", bookings: 76 },
-    { name: "Moving", icon: "📦", bookings: 65 },
-    { name: "Pet Care", icon: "🐕", bookings: 54 },
-  ];
+  const popularServices = serviceCategories
+    .map((service) => {
+      const count = allBookings.filter(
+        (booking) => booking.serviceCategory === service.key,
+      ).length;
+      return {
+        name: service.name,
+        icon: service.icon,
+        bookings: count,
+      };
+    })
+    .sort((a, b) => b.bookings - a.bookings);
+
+  // Calculate real stats
+  const totalBookings = allBookings.length;
+  const completedBookings = allBookings.filter(
+    (b) => b.status === "completed",
+  ).length;
+  const upcomingBookings = allBookings.filter((b) =>
+    ["pending", "accepted", "in-progress"].includes(b.status),
+  ).length;
+  const totalJobs = jobsData?.jobs?.length || 0;
 
   const stats = [
     {
       label: "Total Bookings",
-      value: "12",
+      value: totalBookings.toString(),
       icon: Calendar,
       color: "text-blue-600",
     },
     {
       label: "Completed",
-      value: "8",
+      value: completedBookings.toString(),
       icon: CheckCircle,
       color: "text-green-600",
     },
-    { label: "Upcoming", value: "2", icon: Clock, color: "text-orange-600" },
-    { label: "Favorites", value: "5", icon: Heart, color: "text-red-600" },
+    {
+      label: "Upcoming",
+      value: upcomingBookings.toString(),
+      icon: Clock,
+      color: "text-orange-600",
+    },
+    {
+      label: "Job Posts",
+      value: totalJobs.toString(),
+      icon: Briefcase,
+      color: "text-purple-600",
+    },
   ];
 
   const getStatusColor = (status) => {
@@ -279,16 +307,23 @@ export default function CustomerHomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {recentBookings.filter(
-                  (booking) =>
-                    booking.status === "upcoming" ||
-                    booking.status === "in-progress",
-                ).length > 0 ? (
+                {bookingsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">
+                      Loading your schedule...
+                    </p>
+                  </div>
+                ) : recentBookings.filter(
+                    (booking) =>
+                      booking.status === "accepted" ||
+                      booking.status === "in-progress",
+                  ).length > 0 ? (
                   <div className="space-y-4">
                     {recentBookings
                       .filter(
                         (booking) =>
-                          booking.status === "upcoming" ||
+                          booking.status === "accepted" ||
                           booking.status === "in-progress",
                       )
                       .map((booking) => {
@@ -319,7 +354,7 @@ export default function CustomerHomePage() {
                               </div>
                               <div className="text-right space-y-2">
                                 <p className="font-semibold text-foreground">
-                                  ${booking.amount}
+                                  ₹{booking.amount}
                                 </p>
                                 <span
                                   className={cn(
@@ -327,7 +362,7 @@ export default function CustomerHomePage() {
                                     getStatusColor(booking.status),
                                   )}
                                 >
-                                  {booking.status}
+                                  {booking.status.replace("-", " ")}
                                 </span>
                               </div>
                             </div>
@@ -339,7 +374,7 @@ export default function CustomerHomePage() {
                               <Button size="sm" variant="outline">
                                 View Details
                               </Button>
-                              {booking.status === "upcoming" && (
+                              {booking.status === "accepted" && (
                                 <>
                                   <Button size="sm" variant="outline">
                                     Reschedule
@@ -365,7 +400,7 @@ export default function CustomerHomePage() {
                       No services scheduled for today
                     </p>
                     <Button className="mt-4" asChild>
-                      <Link to="/customer/post-job">Book a Service</Link>
+                      <Link to="/post-job">Book a Service</Link>
                     </Button>
                   </div>
                 )}
@@ -397,99 +432,114 @@ export default function CustomerHomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentBookings.map((booking) => {
-                    const StatusIcon = getStatusIcon(booking.status);
-                    return (
-                      <div
-                        key={booking.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div
-                            className={cn(
-                              "p-2 rounded-full",
-                              getStatusColor(booking.status),
-                            )}
-                          >
-                            <StatusIcon className="w-4 h-4" />
+                {bookingsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading bookings...</p>
+                  </div>
+                ) : recentBookings.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No bookings yet</p>
+                    <Button className="mt-4" asChild>
+                      <Link to="/post-job">Post Your First Job</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {recentBookings.map((booking) => {
+                      const StatusIcon = getStatusIcon(booking.status);
+                      return (
+                        <div
+                          key={booking.id}
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                        >
+                          <div className="flex items-center space-x-4">
+                            <div
+                              className={cn(
+                                "p-2 rounded-full",
+                                getStatusColor(booking.status),
+                              )}
+                            >
+                              <StatusIcon className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-foreground">
+                                {booking.serviceName}
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                with {booking.workerName}
+                              </p>
+                              <div className="flex items-center space-x-4 text-xs text-muted-foreground mt-1">
+                                <span className="flex items-center">
+                                  <Calendar className="w-3 h-3 mr-1" />
+                                  {booking.date}
+                                </span>
+                                <span className="flex items-center">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {booking.time}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-semibold text-foreground">
-                              {booking.serviceName}
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                              with {booking.workerName}
+                          <div className="text-right">
+                            <p className="font-semibold text-foreground mb-2">
+                              ₹{booking.amount}
                             </p>
-                            <div className="flex items-center space-x-4 text-xs text-muted-foreground mt-1">
-                              <span className="flex items-center">
-                                <Calendar className="w-3 h-3 mr-1" />
-                                {booking.date}
-                              </span>
-                              <span className="flex items-center">
-                                <Clock className="w-3 h-3 mr-1" />
-                                {booking.time}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-foreground mb-2">
-                            ${booking.amount}
-                          </p>
-                          {booking.rating && (
-                            <div className="flex items-center text-yellow-500 text-sm mb-2">
-                              <Star className="w-3 h-3 mr-1 fill-current" />
-                              {booking.rating}
-                            </div>
-                          )}
-                          <span
-                            className={cn(
-                              "text-xs px-2 py-1 rounded-full capitalize block mb-3",
-                              getStatusColor(booking.status),
+                            {booking.rating && (
+                              <div className="flex items-center text-yellow-500 text-sm mb-2">
+                                <Star className="w-3 h-3 mr-1 fill-current" />
+                                {booking.rating}
+                              </div>
                             )}
-                          >
-                            {booking.status}
-                          </span>
-                          <div className="flex flex-col space-y-1">
-                            {booking.status === "upcoming" && (
+                            <span
+                              className={cn(
+                                "text-xs px-2 py-1 rounded-full capitalize block mb-3",
+                                getStatusColor(booking.status),
+                              )}
+                            >
+                              {booking.status.replace("-", " ")}
+                            </span>
+                            <div className="flex flex-col space-y-1">
+                              {booking.status === "accepted" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  Reschedule
+                                </Button>
+                              )}
+                              {(booking.status === "accepted" ||
+                                booking.status === "in-progress") && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs text-red-600 hover:text-red-700"
+                                >
+                                  Cancel
+                                </Button>
+                              )}
+                              {booking.status === "completed" &&
+                                !booking.rating && (
+                                  <Button size="sm" className="text-xs">
+                                    Rate Service
+                                  </Button>
+                                )}
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="text-xs"
                               >
-                                Reschedule
+                                View Details
                               </Button>
-                            )}
-                            {(booking.status === "upcoming" ||
-                              booking.status === "in-progress") && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs text-red-600 hover:text-red-700"
-                              >
-                                Cancel
-                              </Button>
-                            )}
-                            {booking.status === "completed" &&
-                              !booking.rating && (
-                                <Button size="sm" className="text-xs">
-                                  Rate Service
-                                </Button>
-                              )}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              View Details
-                            </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
