@@ -353,7 +353,14 @@ export default function WorkerHomePage() {
                 <CardDescription>Your bookings for today</CardDescription>
               </CardHeader>
               <CardContent>
-                {todayBookings.length > 0 ? (
+                {bookingsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">
+                      Loading today's bookings...
+                    </p>
+                  </div>
+                ) : todayBookings.length > 0 ? (
                   <div className="space-y-4">
                     {todayBookings.map((booking) => (
                       <div
