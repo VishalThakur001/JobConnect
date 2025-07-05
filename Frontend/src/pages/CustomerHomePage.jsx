@@ -432,99 +432,114 @@ export default function CustomerHomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {recentBookings.map((booking) => {
-                    const StatusIcon = getStatusIcon(booking.status);
-                    return (
-                      <div
-                        key={booking.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div
-                            className={cn(
-                              "p-2 rounded-full",
-                              getStatusColor(booking.status),
-                            )}
-                          >
-                            <StatusIcon className="w-4 h-4" />
+                {bookingsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">Loading bookings...</p>
+                  </div>
+                ) : recentBookings.length === 0 ? (
+                  <div className="text-center py-8">
+                    <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">No bookings yet</p>
+                    <Button className="mt-4" asChild>
+                      <Link to="/post-job">Post Your First Job</Link>
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {recentBookings.map((booking) => {
+                      const StatusIcon = getStatusIcon(booking.status);
+                      return (
+                        <div
+                          key={booking.id}
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                        >
+                          <div className="flex items-center space-x-4">
+                            <div
+                              className={cn(
+                                "p-2 rounded-full",
+                                getStatusColor(booking.status),
+                              )}
+                            >
+                              <StatusIcon className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-foreground">
+                                {booking.serviceName}
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                with {booking.workerName}
+                              </p>
+                              <div className="flex items-center space-x-4 text-xs text-muted-foreground mt-1">
+                                <span className="flex items-center">
+                                  <Calendar className="w-3 h-3 mr-1" />
+                                  {booking.date}
+                                </span>
+                                <span className="flex items-center">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {booking.time}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-semibold text-foreground">
-                              {booking.serviceName}
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                              with {booking.workerName}
+                          <div className="text-right">
+                            <p className="font-semibold text-foreground mb-2">
+                              ₹{booking.amount}
                             </p>
-                            <div className="flex items-center space-x-4 text-xs text-muted-foreground mt-1">
-                              <span className="flex items-center">
-                                <Calendar className="w-3 h-3 mr-1" />
-                                {booking.date}
-                              </span>
-                              <span className="flex items-center">
-                                <Clock className="w-3 h-3 mr-1" />
-                                {booking.time}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-foreground mb-2">
-                            ${booking.amount}
-                          </p>
-                          {booking.rating && (
-                            <div className="flex items-center text-yellow-500 text-sm mb-2">
-                              <Star className="w-3 h-3 mr-1 fill-current" />
-                              {booking.rating}
-                            </div>
-                          )}
-                          <span
-                            className={cn(
-                              "text-xs px-2 py-1 rounded-full capitalize block mb-3",
-                              getStatusColor(booking.status),
+                            {booking.rating && (
+                              <div className="flex items-center text-yellow-500 text-sm mb-2">
+                                <Star className="w-3 h-3 mr-1 fill-current" />
+                                {booking.rating}
+                              </div>
                             )}
-                          >
-                            {booking.status}
-                          </span>
-                          <div className="flex flex-col space-y-1">
-                            {booking.status === "upcoming" && (
+                            <span
+                              className={cn(
+                                "text-xs px-2 py-1 rounded-full capitalize block mb-3",
+                                getStatusColor(booking.status),
+                              )}
+                            >
+                              {booking.status.replace("-", " ")}
+                            </span>
+                            <div className="flex flex-col space-y-1">
+                              {booking.status === "accepted" && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs"
+                                >
+                                  Reschedule
+                                </Button>
+                              )}
+                              {(booking.status === "accepted" ||
+                                booking.status === "in-progress") && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs text-red-600 hover:text-red-700"
+                                >
+                                  Cancel
+                                </Button>
+                              )}
+                              {booking.status === "completed" &&
+                                !booking.rating && (
+                                  <Button size="sm" className="text-xs">
+                                    Rate Service
+                                  </Button>
+                                )}
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="text-xs"
                               >
-                                Reschedule
+                                View Details
                               </Button>
-                            )}
-                            {(booking.status === "upcoming" ||
-                              booking.status === "in-progress") && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs text-red-600 hover:text-red-700"
-                              >
-                                Cancel
-                              </Button>
-                            )}
-                            {booking.status === "completed" &&
-                              !booking.rating && (
-                                <Button size="sm" className="text-xs">
-                                  Rate Service
-                                </Button>
-                              )}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              View Details
-                            </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
