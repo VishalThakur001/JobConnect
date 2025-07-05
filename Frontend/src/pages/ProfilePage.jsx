@@ -23,7 +23,7 @@ export default function ProfilePage() {
     { id: "photo", label: "Profile Photo", icon: "📸" },
     { id: "address", label: "Address", icon: "🏠" },
     ...(user?.role === "worker"
-      ? [{ id: "work", label: "Work Settings", icon: "���" }]
+      ? [{ id: "work", label: "Work Settings", icon: "🔧" }]
       : []),
     { id: "security", label: "Security", icon: "🔒" },
   ];
@@ -87,20 +87,26 @@ export default function ProfilePage() {
             <Card className="mt-6">
               <CardContent className="pt-6">
                 <div className="flex items-center space-x-4">
-                  <img
-                    src={user?.photo || "/default-avatar.png"}
-                    alt="Profile"
-                    className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
-                  />
+                  {user?.photo ? (
+                    <img
+                      src={user.photo}
+                      alt="Profile"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-gray-200"
+                    />
+                  ) : (
+                    <UserAvatar user={user} size="xl" />
+                  )}
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900">
-                      {user?.fullName}
+                      {user?.fullName || "User"}
                     </h3>
                     <p className="text-sm text-gray-500 capitalize">
-                      {user?.role}
+                      {user?.role || "User"}
                       {user?.profession && ` • ${user.profession}`}
                     </p>
-                    <p className="text-sm text-gray-500">{user?.email}</p>
+                    <p className="text-sm text-gray-500">
+                      {user?.email || "No email"}
+                    </p>
                   </div>
                 </div>
               </CardContent>
