@@ -40,6 +40,10 @@ export default function WorkerHomePage() {
   // Use the actual user's availability status from Redux state
   const isAvailable = user?.isAvailable ?? true;
 
+  // Fetch real data using hooks
+  const { data: allBookings = [], isLoading: bookingsLoading } =
+    useWorkerBookings("");
+
   const handleAvailabilityToggle = async () => {
     try {
       await updateProfileMutation.mutateAsync({
