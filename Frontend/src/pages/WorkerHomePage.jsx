@@ -54,29 +54,32 @@ export default function WorkerHomePage() {
     }
   };
 
-  // Mock data - replace with real API calls
-  const todayBookings = [
-    {
-      id: 1,
-      customerName: "Alice Smith",
-      service: "Home Cleaning",
-      time: "10:00 AM - 12:00 PM",
-      address: "123 Main St, Downtown",
-      phone: "+1 234-567-8901",
-      status: "upcoming",
-      amount: 150,
-    },
-    {
-      id: 2,
-      customerName: "Bob Johnson",
-      service: "Kitchen Deep Clean",
-      time: "2:00 PM - 4:00 PM",
-      address: "456 Oak Ave, Midtown",
-      phone: "+1 234-567-8902",
-      status: "in-progress",
-      amount: 200,
-    },
-  ];
+  // Process today's bookings from real data
+  const today = new Date().toDateString();
+  const todayBookings = allBookings
+    .filter(
+      (booking) => new Date(booking.scheduledDate).toDateString() === today,
+    )
+    .slice(0, 3)
+    .map((booking) => ({
+      id: booking._id,
+      customerName: booking.customerId?.fullName || "Customer",
+      service:
+        booking.serviceCategory?.charAt(0).toUpperCase() +
+          booking.serviceCategory?.slice(1).replace("-", " ") || "Service",
+      time: new Date(booking.scheduledDate).toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+      address:
+        `${booking.customerId?.address?.street || ""}, ${booking.customerId?.address?.city || ""}`.replace(
+          /^, /,
+          "",
+        ),
+      phone: booking.customerId?.phoneNumber || "Not provided",
+      status: booking.status,
+      amount: booking.amount,
+    }));
 
   const recentReviews = [
     {
