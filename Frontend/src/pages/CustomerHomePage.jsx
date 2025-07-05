@@ -28,67 +28,95 @@ import {
 } from "../components/ui/card";
 import { cn } from "../utils/cn";
 import UserAvatar from "../components/UserAvatar";
+import { useCustomerBookings } from "../hooks/useBooking";
+import { useMyJobPosts } from "../hooks/useJob";
+import { useMyReviews } from "../hooks/useReview";
 
 export default function CustomerHomePage() {
   const { user } = useSelector((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Mock data - replace with real API calls
-  const recentBookings = [
-    {
-      id: 1,
-      serviceName: "Home Cleaning",
-      workerName: "Sarah Johnson",
-      date: "2024-01-15",
-      time: "10:00 AM",
-      status: "completed",
-      rating: 5,
-      amount: 150,
-    },
-    {
-      id: 2,
-      serviceName: "Plumbing Repair",
-      workerName: "Mike Wilson",
-      date: "2024-01-20",
-      time: "2:00 PM",
-      status: "upcoming",
-      amount: 200,
-    },
-    {
-      id: 3,
-      serviceName: "Electrical Work",
-      workerName: "David Chen",
-      date: "2024-01-10",
-      time: "9:00 AM",
-      status: "in-progress",
-      amount: 180,
-    },
+  // Fetch real data using hooks
+  const { data: allBookings = [], isLoading: bookingsLoading } =
+    useCustomerBookings("");
+  const { data: jobsData, isLoading: jobsLoading } = useMyJobPosts(1, 100);
+  const { data: reviewsData = [], isLoading: reviewsLoading } = useMyReviews();
+
+  // Process bookings data
+  const recentBookings = allBookings.slice(0, 3).map((booking) => ({
+    id: booking._id,
+    serviceName:
+      booking.serviceCategory?.charAt(0).toUpperCase() +
+        booking.serviceCategory?.slice(1).replace("-", " ") || "Service",
+    workerName: booking.workerId?.fullName || "Worker",
+    date: new Date(booking.scheduledDate).toLocaleDateString(),
+    time: new Date(booking.scheduledDate).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    status: booking.status,
+    rating: booking.rating,
+    amount: booking.amount,
+  }));
+
+  // Popular services with actual counts
+  const serviceCategories = [
+    { key: "home-cleaner", name: "Home Cleaning", icon: "🏠" },
+    { key: "plumber", name: "Plumbing", icon: "🔧" },
+    { key: "electrician", name: "Electrical", icon: "⚡" },
+    { key: "carpenter", name: "Gardening", icon: "🌱" },
+    { key: "painter", name: "Moving", icon: "📦" },
+    { key: "mechanic", name: "Pet Care", icon: "🐕" },
   ];
 
-  const popularServices = [
-    { name: "Home Cleaning", icon: "🏠", bookings: 145 },
-    { name: "Plumbing", icon: "🔧", bookings: 98 },
-    { name: "Electrical", icon: "⚡", bookings: 87 },
-    { name: "Gardening", icon: "🌱", bookings: 76 },
-    { name: "Moving", icon: "📦", bookings: 65 },
-    { name: "Pet Care", icon: "🐕", bookings: 54 },
-  ];
+  const popularServices = serviceCategories
+    .map((service) => {
+      const count = allBookings.filter(
+        (booking) => booking.serviceCategory === service.key,
+      ).length;
+      return {
+        name: service.name,
+        icon: service.icon,
+        bookings: count,
+      };
+    })
+    .sort((a, b) => b.bookings - a.bookings);
+
+  // Calculate real stats
+  const totalBookings = allBookings.length;
+  const completedBookings = allBookings.filter(
+    (b) => b.status === "completed",
+  ).length;
+  const upcomingBookings = allBookings.filter((b) =>
+    ["pending", "accepted", "in-progress"].includes(b.status),
+  ).length;
+  const totalJobs = jobsData?.jobs?.length || 0;
 
   const stats = [
     {
       label: "Total Bookings",
-      value: "12",
+      value: totalBookings.toString(),
       icon: Calendar,
       color: "text-blue-600",
     },
     {
       label: "Completed",
-      value: "8",
+      value: completedBookings.toString(),
       icon: CheckCircle,
       color: "text-green-600",
     },
-    { label: "Upcoming", value: "2", icon: Clock, color: "text-orange-600" },
-    { label: "Favorites", value: "5", icon: Heart, color: "text-red-600" },
+    {
+      label: "Upcoming",
+      value: upcomingBookings.toString(),
+      icon: Clock,
+      color: "text-orange-600",
+    },
+    {
+      label: "Job Posts",
+      value: totalJobs.toString(),
+      icon: Briefcase,
+      color: "text-purple-600",
+    },
   ];
 
   const getStatusColor = (status) => {
