@@ -12,6 +12,7 @@ import AddressForm from "./Profile/AddressForm";
 import WorkerSettingsForm from "./Profile/WorkerSettingsForm";
 import PhotoUpload from "./Profile/PhotoUpload";
 import SecuritySettings from "./Profile/SecuritySettings";
+import UserAvatar from "../components/UserAvatar";
 
 export default function ProfilePage() {
   const { user } = useSelector((state) => state.user);
@@ -22,7 +23,7 @@ export default function ProfilePage() {
     { id: "photo", label: "Profile Photo", icon: "📸" },
     { id: "address", label: "Address", icon: "🏠" },
     ...(user?.role === "worker"
-      ? [{ id: "work", label: "Work Settings", icon: "🔧" }]
+      ? [{ id: "work", label: "Work Settings", icon: "���" }]
       : []),
     { id: "security", label: "Security", icon: "🔒" },
   ];
