@@ -86,11 +86,17 @@ export default function PhotoUpload() {
         {/* Current Photo */}
         <div className="flex items-center space-x-6">
           <div className="relative">
-            <img
-              src={previewUrl || user?.photo || "/default-avatar.png"}
-              alt="Profile"
-              className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 shadow-md"
-            />
+            {previewUrl || user?.photo ? (
+              <img
+                src={previewUrl || user.photo}
+                alt="Profile"
+                className="w-32 h-32 rounded-full object-cover border-4 border-gray-200 shadow-md"
+              />
+            ) : (
+              <div className="w-32 h-32 border-4 border-gray-200 shadow-md rounded-full flex items-center justify-center">
+                <UserAvatar user={user} size="3xl" />
+              </div>
+            )}
             {updatePhotoMutation.isPending && (
               <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
                 <div className="w-8 h-8 border-3 border-white border-t-transparent rounded-full animate-spin"></div>
