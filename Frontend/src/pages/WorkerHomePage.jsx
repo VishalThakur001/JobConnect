@@ -113,31 +113,31 @@ export default function WorkerHomePage() {
   const stats = [
     {
       label: "Today's Bookings",
-      value: "3",
+      value: todayBookings.length.toString(),
       icon: Calendar,
       color: "text-blue-600",
-      change: "+2 from yesterday",
+      change: "scheduled for today",
     },
     {
       label: "This Week's Earnings",
-      value: "$1,250",
+      value: `₹${thisWeekEarnings.toLocaleString()}`,
       icon: DollarSign,
       color: "text-green-600",
-      change: "+15% from last week",
+      change: "from this week",
     },
     {
       label: "Average Rating",
-      value: "4.8",
+      value: "N/A",
       icon: Star,
       color: "text-yellow-600",
-      change: "based on 45 reviews",
+      change: "complete jobs for ratings",
     },
     {
       label: "Completed Jobs",
-      value: "124",
+      value: completedJobsCount.toString(),
       icon: CheckCircle,
       color: "text-purple-600",
-      change: "+8 this month",
+      change: "lifetime total",
     },
   ];
 
