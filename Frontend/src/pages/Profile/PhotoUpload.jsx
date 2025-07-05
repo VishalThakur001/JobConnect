@@ -10,6 +10,7 @@ import { Button } from "../../components/ui/button";
 import { Label } from "../../components/ui/label";
 import { Input } from "../../components/ui/input";
 import { useUpdateProfilePhoto } from "../../hooks/useProfile";
+import UserAvatar from "../../components/UserAvatar";
 
 export default function PhotoUpload() {
   const { user } = useSelector((state) => state.user);
