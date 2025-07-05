@@ -307,16 +307,23 @@ export default function CustomerHomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {recentBookings.filter(
-                  (booking) =>
-                    booking.status === "upcoming" ||
-                    booking.status === "in-progress",
-                ).length > 0 ? (
+                {bookingsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">
+                      Loading your schedule...
+                    </p>
+                  </div>
+                ) : recentBookings.filter(
+                    (booking) =>
+                      booking.status === "accepted" ||
+                      booking.status === "in-progress",
+                  ).length > 0 ? (
                   <div className="space-y-4">
                     {recentBookings
                       .filter(
                         (booking) =>
-                          booking.status === "upcoming" ||
+                          booking.status === "accepted" ||
                           booking.status === "in-progress",
                       )
                       .map((booking) => {
@@ -347,7 +354,7 @@ export default function CustomerHomePage() {
                               </div>
                               <div className="text-right space-y-2">
                                 <p className="font-semibold text-foreground">
-                                  ${booking.amount}
+                                  ₹{booking.amount}
                                 </p>
                                 <span
                                   className={cn(
@@ -355,7 +362,7 @@ export default function CustomerHomePage() {
                                     getStatusColor(booking.status),
                                   )}
                                 >
-                                  {booking.status}
+                                  {booking.status.replace("-", " ")}
                                 </span>
                               </div>
                             </div>
@@ -367,7 +374,7 @@ export default function CustomerHomePage() {
                               <Button size="sm" variant="outline">
                                 View Details
                               </Button>
-                              {booking.status === "upcoming" && (
+                              {booking.status === "accepted" && (
                                 <>
                                   <Button size="sm" variant="outline">
                                     Reschedule
@@ -393,7 +400,7 @@ export default function CustomerHomePage() {
                       No services scheduled for today
                     </p>
                     <Button className="mt-4" asChild>
-                      <Link to="/customer/post-job">Book a Service</Link>
+                      <Link to="/post-job">Book a Service</Link>
                     </Button>
                   </div>
                 )}
