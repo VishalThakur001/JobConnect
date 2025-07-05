@@ -30,6 +30,7 @@ import {
 } from "../components/ui/card";
 import { cn } from "../utils/cn";
 import { useUpdateStatus } from "../hooks/useProfile";
+import { useWorkerBookings } from "../hooks/useBooking";
 import UserAvatar from "../components/UserAvatar";
 
 export default function WorkerHomePage() {
