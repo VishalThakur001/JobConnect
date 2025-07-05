@@ -21,6 +21,8 @@ import PostJobPage from "./pages/PostJobPage";
 import FindJobsPage from "./pages/FindJobsPage";
 import CustomerJobsPage from "./pages/CustomerJobsPage";
 import JobApplicationsPage from "./pages/JobApplicationsPage";
+import CustomerBookingsPage from "./pages/CustomerBookingsPage";
+import WorkerBookingsPage from "./pages/WorkerBookingsPage";
 import AuthLayout from "./components/authLayout";
 
 function App() {
@@ -164,6 +166,14 @@ function App() {
             </AuthLayout>
           }
         />
+        <Route
+          path="/customer/bookings"
+          element={
+            <AuthLayout>
+              <CustomerBookingsPage />
+            </AuthLayout>
+          }
+        />
 
         {/* Worker Job Finding Routes */}
         <Route
@@ -171,6 +181,14 @@ function App() {
           element={
             <AuthLayout>
               <FindJobsPage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/worker/bookings"
+          element={
+            <AuthLayout>
+              <WorkerBookingsPage />
             </AuthLayout>
           }
         />
@@ -184,18 +202,8 @@ function App() {
             </AuthLayout>
           }
         />
-        <Route
-          path="/how-it-works"
-          element={
-            <HowItWorksPage />
-          }
-        />
-        <Route
-          path="/about"
-          element={
-            <AboutPage />
-          }
-        />
+        <Route path="/how-it-works" element={<HowItWorksPage />} />
+        <Route path="/about" element={<AboutPage />} />
       </Routes>
     </div>
   );

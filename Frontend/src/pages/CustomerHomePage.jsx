@@ -27,6 +27,7 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { cn } from "../utils/cn";
+import UserAvatar from "../components/UserAvatar";
 
 export default function CustomerHomePage() {
   const { user } = useSelector((state) => state.user);
@@ -124,19 +125,40 @@ export default function CustomerHomePage() {
         {/* Welcome Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Welcome back, {user?.fullName || user?.name}!
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Find and manage your service bookings
-              </p>
+            <div className="flex items-center space-x-4">
+              <UserAvatar user={user} size="3xl" className="hidden sm:flex" />
+              <UserAvatar user={user} size="2xl" className="sm:hidden" />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  Welcome back, {user?.fullName || user?.name}!
+                </h1>
+                <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+                  Find and manage your service bookings
+                </p>
+                <div className="flex items-center space-x-4 mt-2">
+                  <div className="flex items-center space-x-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-xs text-green-600 font-medium">
+                      Active
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Customer Dashboard
+                  </span>
+                </div>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="outline" asChild>
-                <Link to="/profile">
-                  <Settings className="w-4 h-4 mr-2" />
-                  Settings
+                <Link to="/customer/bookings">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  My Bookings
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/customer/jobs">
+                  <Briefcase className="w-4 h-4 mr-2" />
+                  Manage Jobs
                 </Link>
               </Button>
               <Button asChild>
@@ -145,15 +167,23 @@ export default function CustomerHomePage() {
                   Post Job
                 </Link>
               </Button>
+              <Button variant="outline" asChild>
+                <Link to="/profile">
+                  <Settings className="w-4 h-4 mr-2" />
+                  Settings
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
 
         {/* Quick Search */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Search className="w-5 h-5 mr-2" />
+        <Card className="mb-8 card-gradient border-none shadow-xl">
+          <CardHeader className="bg-gradient-to-r from-blue-500/10 to-purple-500/10 rounded-t-lg">
+            <CardTitle className="flex items-center text-lg">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center mr-3">
+                <Search className="w-4 h-4 text-white" />
+              </div>
               Find Services
             </CardTitle>
             <CardDescription>Search for services in your area</CardDescription>
@@ -183,8 +213,17 @@ export default function CustomerHomePage() {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
+            const gradients = [
+              "bg-gradient-to-br from-blue-400 to-blue-600",
+              "bg-gradient-to-br from-green-400 to-green-600",
+              "bg-gradient-to-br from-orange-400 to-orange-600",
+              "bg-gradient-to-br from-red-400 to-red-600",
+            ];
             return (
-              <Card key={index}>
+              <Card
+                key={index}
+                className="card-gradient border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+              >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -195,7 +234,14 @@ export default function CustomerHomePage() {
                         {stat.value}
                       </p>
                     </div>
-                    <Icon className={cn("w-6 h-6", stat.color)} />
+                    <div
+                      className={cn(
+                        "w-12 h-12 rounded-xl flex items-center justify-center",
+                        gradients[index],
+                      )}
+                    >
+                      <Icon className="w-6 h-6 text-white" />
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -206,16 +252,148 @@ export default function CustomerHomePage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Recent Bookings */}
           <div className="lg:col-span-2">
+            {/* Today's Bookings */}
+            <Card className="mb-6 card-gradient border-none shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-orange-500/10 to-red-500/10 rounded-t-lg">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center text-lg">
+                    <div className="w-8 h-8 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg flex items-center justify-center mr-3">
+                      <Clock className="w-4 h-4 text-white" />
+                    </div>
+                    Today's Schedule
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="glass-effect border-orange-200"
+                  >
+                    <Link to="/customer/bookings">
+                      <Calendar className="w-4 h-4 mr-1" />
+                      View Calendar
+                    </Link>
+                  </Button>
+                </div>
+                <CardDescription>
+                  Your scheduled services for today
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {recentBookings.filter(
+                  (booking) =>
+                    booking.status === "upcoming" ||
+                    booking.status === "in-progress",
+                ).length > 0 ? (
+                  <div className="space-y-4">
+                    {recentBookings
+                      .filter(
+                        (booking) =>
+                          booking.status === "upcoming" ||
+                          booking.status === "in-progress",
+                      )
+                      .map((booking) => {
+                        const StatusIcon = getStatusIcon(booking.status);
+                        return (
+                          <div
+                            key={booking.id}
+                            className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="space-y-1">
+                                <h4 className="font-semibold text-foreground">
+                                  {booking.serviceName}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  Worker: {booking.workerName}
+                                </p>
+                                <div className="flex items-center space-x-4 text-xs text-muted-foreground">
+                                  <span className="flex items-center">
+                                    <Clock className="w-3 h-3 mr-1" />
+                                    {booking.time}
+                                  </span>
+                                  <span className="flex items-center">
+                                    <Calendar className="w-3 h-3 mr-1" />
+                                    {booking.date}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="text-right space-y-2">
+                                <p className="font-semibold text-foreground">
+                                  ${booking.amount}
+                                </p>
+                                <span
+                                  className={cn(
+                                    "text-xs px-2 py-1 rounded-full capitalize",
+                                    getStatusColor(booking.status),
+                                  )}
+                                >
+                                  {booking.status}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center space-x-2 mt-3">
+                              <Button size="sm" variant="outline">
+                                <MessageCircle className="w-4 h-4 mr-1" />
+                                Message
+                              </Button>
+                              <Button size="sm" variant="outline">
+                                View Details
+                              </Button>
+                              {booking.status === "upcoming" && (
+                                <>
+                                  <Button size="sm" variant="outline">
+                                    Reschedule
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    Cancel
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">
+                      No services scheduled for today
+                    </p>
+                    <Button className="mt-4" asChild>
+                      <Link to="/customer/post-job">Book a Service</Link>
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* All Bookings History */}
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle>Recent Bookings</CardTitle>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to="/customer/bookings">View All</Link>
-                  </Button>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to="/customer/bookings">
+                        <Calendar className="w-4 h-4 mr-1" />
+                        Manage All
+                      </Link>
+                    </Button>
+                    <Button size="sm" asChild>
+                      <Link to="/customer/post-job">
+                        <Plus className="w-4 h-4 mr-1" />
+                        Book Service
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
                 <CardDescription>
-                  Your latest service bookings and their status
+                  Your latest service bookings with quick actions
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -256,23 +434,57 @@ export default function CustomerHomePage() {
                           </div>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-foreground">
+                          <p className="font-semibold text-foreground mb-2">
                             ${booking.amount}
                           </p>
                           {booking.rating && (
-                            <div className="flex items-center text-yellow-500 text-sm">
+                            <div className="flex items-center text-yellow-500 text-sm mb-2">
                               <Star className="w-3 h-3 mr-1 fill-current" />
                               {booking.rating}
                             </div>
                           )}
                           <span
                             className={cn(
-                              "text-xs px-2 py-1 rounded-full capitalize",
+                              "text-xs px-2 py-1 rounded-full capitalize block mb-3",
                               getStatusColor(booking.status),
                             )}
                           >
                             {booking.status}
                           </span>
+                          <div className="flex flex-col space-y-1">
+                            {booking.status === "upcoming" && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs"
+                              >
+                                Reschedule
+                              </Button>
+                            )}
+                            {(booking.status === "upcoming" ||
+                              booking.status === "in-progress") && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-xs text-red-600 hover:text-red-700"
+                              >
+                                Cancel
+                              </Button>
+                            )}
+                            {booking.status === "completed" &&
+                              !booking.rating && (
+                                <Button size="sm" className="text-xs">
+                                  Rate Service
+                                </Button>
+                              )}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs"
+                            >
+                              View Details
+                            </Button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -326,6 +538,12 @@ export default function CustomerHomePage() {
                 <CardTitle>Quick Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
+                <Button className="w-full justify-start" asChild>
+                  <Link to="/customer/bookings">
+                    <Calendar className="w-4 h-4 mr-2" />
+                    View & Manage Bookings
+                  </Link>
+                </Button>
                 <Button
                   variant="outline"
                   className="w-full justify-start"
@@ -343,12 +561,16 @@ export default function CustomerHomePage() {
                 >
                   <Link to="/customer/jobs">
                     <Briefcase className="w-4 h-4 mr-2" />
-                    Manage Jobs
+                    Manage Job Posts
                   </Link>
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <MessageCircle className="w-4 h-4 mr-2" />
                   Message Workers
+                </Button>
+                <Button variant="outline" className="w-full justify-start">
+                  <Star className="w-4 h-4 mr-2" />
+                  Leave Reviews
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <Heart className="w-4 h-4 mr-2" />
@@ -363,10 +585,6 @@ export default function CustomerHomePage() {
                     <User className="w-4 h-4 mr-2" />
                     Update Profile
                   </Link>
-                </Button>
-                <Button variant="outline" className="w-full justify-start">
-                  <Star className="w-4 h-4 mr-2" />
-                  Leave Reviews
                 </Button>
               </CardContent>
             </Card>

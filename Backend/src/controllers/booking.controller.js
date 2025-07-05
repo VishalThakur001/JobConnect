@@ -10,39 +10,46 @@ export const createBookingFromJobApplication = async (req, res) => {
 
     // Verify customer role
     if (req.user.role !== "customer") {
-      return res.status(403).json({ message: "Only customers can create bookings" });
+      return res
+        .status(403)
+        .json({ message: "Only customers can create bookings" });
     }
 
     // Validate job
     const job = await JobPost.findOne({ _id: jobId, customerId });
     if (!job) {
-      return res.status(404).json({ message: "Job not found or not authorized" });
+      return res
+        .status(404)
+        .json({ message: "Job not found or not authorized" });
     }
 
     // Validate application
     const application = await JobApplication.findOne({
       _id: applicationId,
       jobId,
-      status: "pending",
+      customerId,
+      status: "applied",
     }).populate("workerId");
 
     if (!application) {
-      return res.status(404).json({ message: "Job application not found or already handled" });
+      return res
+        .status(404)
+        .json({ message: "Job application not found or already handled" });
     }
 
     // Create booking
     const booking = await Booking.create({
       customerId,
       workerId: application.workerId._id,
+      jobApplicationId: applicationId,
       serviceCategory: job.serviceCategory,
-      scheduledDate: new Date(application.availabilityDate),
-      amount: application.expectedRate,
+      scheduledDate: application.proposedSchedule?.startDate || new Date(),
+      amount: application.proposedAmount,
       location: job.location,
-      address: job.address,
       description: job.description,
       status: "pending",
-      urgent: false, // Default, can be updated
-      jobId: job._id,
+      urgent: job.urgent || false,
+      paymentMethod: "cash", // Default, can be updated later
     });
 
     // Update job post to mark it assigned
@@ -52,6 +59,9 @@ export const createBookingFromJobApplication = async (req, res) => {
 
     // Update application status
     application.status = "accepted";
+    application.bookingId = booking._id;
+    application.convertedToBooking = true;
+    application.convertedAt = new Date();
     await application.save();
 
     const populatedBooking = await Booking.findById(booking._id)
@@ -137,7 +147,7 @@ export const getCustomerBookings = async (req, res) => {
       query.status = status;
     } else {
       // Default to active bookings
-      query.status = { $in: ["requested", "accepted", "in_progress"] };
+      query.status = { $in: ["pending", "accepted", "in-progress"] };
     }
 
     const bookings = await Booking.find(query)
@@ -177,7 +187,7 @@ export const updateBookingStatus = async (req, res) => {
     const validStatuses = [
       "accepted",
       "rejected",
-      "in_progress",
+      "in-progress",
       "completed",
       "cancelled",
     ];
@@ -201,7 +211,7 @@ export const updateBookingStatus = async (req, res) => {
     }
 
     // Check permissions based on status change
-    if (["accepted", "rejected", "in_progress", "completed"].includes(status)) {
+    if (["accepted", "rejected", "in-progress", "completed"].includes(status)) {
       // Only worker can update these statuses
       if (booking.workerId._id.toString() !== userId.toString()) {
         return res.status(403).json({

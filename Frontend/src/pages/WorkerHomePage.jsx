@@ -29,10 +29,25 @@ import {
   CardTitle,
 } from "../components/ui/card";
 import { cn } from "../utils/cn";
+import { useUpdateStatus } from "../hooks/useProfile";
+import UserAvatar from "../components/UserAvatar";
 
 export default function WorkerHomePage() {
   const { user } = useSelector((state) => state.user);
-  const [isAvailable, setIsAvailable] = useState(true);
+  const updateProfileMutation = useUpdateStatus();
+
+  // Use the actual user's availability status from Redux state
+  const isAvailable = user?.isAvailable ?? true;
+
+  const handleAvailabilityToggle = async () => {
+    try {
+      await updateProfileMutation.mutateAsync({
+        isAvailable: !isAvailable,
+      });
+    } catch (error) {
+      console.error("Failed to update availability:", error);
+    }
+  };
 
   // Mock data - replace with real API calls
   const todayBookings = [
@@ -166,13 +181,40 @@ export default function WorkerHomePage() {
         {/* Header */}
         <div className="mb-8">
           <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Good morning, {user?.fullName || user?.name}!
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Manage your services and track your earnings
-              </p>
+            <div className="flex items-center space-x-4">
+              <UserAvatar user={user} size="3xl" className="hidden sm:flex" />
+              <UserAvatar user={user} size="2xl" className="sm:hidden" />
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+                  Good morning, {user?.fullName || user?.name}!
+                </h1>
+                <p className="text-muted-foreground mt-1 text-sm sm:text-base">
+                  Manage your services and track your earnings
+                </p>
+                <div className="flex items-center space-x-4 mt-2">
+                  <div className="flex items-center space-x-1">
+                    <div
+                      className={cn(
+                        "w-2 h-2 rounded-full",
+                        isAvailable
+                          ? "bg-green-500 animate-pulse"
+                          : "bg-gray-400",
+                      )}
+                    ></div>
+                    <span
+                      className={cn(
+                        "text-xs font-medium",
+                        isAvailable ? "text-green-600" : "text-gray-500",
+                      )}
+                    >
+                      {isAvailable ? "Available" : "Unavailable"}
+                    </span>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    Worker Dashboard
+                  </span>
+                </div>
+              </div>
             </div>
             <div className="flex items-center space-x-4">
               {/* Availability Toggle */}
@@ -181,8 +223,9 @@ export default function WorkerHomePage() {
                   Available
                 </span>
                 <button
-                  onClick={() => setIsAvailable(!isAvailable)}
-                  className="focus:outline-none"
+                  onClick={handleAvailabilityToggle}
+                  disabled={updateProfileMutation.isPending}
+                  className="focus:outline-none disabled:opacity-50"
                 >
                   {isAvailable ? (
                     <ToggleRight className="w-8 h-8 text-green-600" />
@@ -191,6 +234,12 @@ export default function WorkerHomePage() {
                   )}
                 </button>
               </div>
+              <Button variant="outline" asChild>
+                <Link to="/worker/bookings">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  My Bookings
+                </Link>
+              </Button>
               <Button asChild>
                 <Link to="/worker/find-jobs">
                   <Search className="w-4 h-4 mr-2" />
@@ -224,14 +273,30 @@ export default function WorkerHomePage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => {
             const Icon = stat.icon;
+            const gradients = [
+              "bg-gradient-to-br from-blue-400 to-blue-600",
+              "bg-gradient-to-br from-green-400 to-green-600",
+              "bg-gradient-to-br from-yellow-400 to-yellow-600",
+              "bg-gradient-to-br from-purple-400 to-purple-600",
+            ];
             return (
-              <Card key={index}>
+              <Card
+                key={index}
+                className="card-gradient border-none shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+              >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-sm font-medium text-muted-foreground">
                       {stat.label}
                     </p>
-                    <Icon className={cn("w-5 h-5", stat.color)} />
+                    <div
+                      className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center",
+                        gradients[index],
+                      )}
+                    >
+                      <Icon className="w-5 h-5 text-white" />
+                    </div>
                   </div>
                   <p className="text-2xl font-bold text-foreground mb-1">
                     {stat.value}
@@ -246,11 +311,21 @@ export default function WorkerHomePage() {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Today's Schedule */}
           <div className="lg:col-span-2">
-            <Card className="mb-6">
-              <CardHeader>
+            <Card className="mb-6 card-gradient border-none shadow-xl">
+              <CardHeader className="bg-gradient-to-r from-green-500/10 to-blue-500/10 rounded-t-lg">
                 <div className="flex items-center justify-between">
-                  <CardTitle>Today's Schedule</CardTitle>
-                  <Button variant="outline" size="sm" asChild>
+                  <CardTitle className="flex items-center text-lg">
+                    <div className="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center mr-3">
+                      <Calendar className="w-4 h-4 text-white" />
+                    </div>
+                    Today's Schedule
+                  </CardTitle>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    asChild
+                    className="glass-effect border-green-200"
+                  >
                     <Link to="/worker/calendar">
                       <Calendar className="w-4 h-4 mr-2" />
                       View Calendar

@@ -93,24 +93,52 @@ export const updateAccountDetails = async (req, res) => {
       updatedFields.address = { street, city, state, pincode };
     }
 
-    // Handle availabilityTimes only if provided and user is a worker
-    if (role === "worker" && req.body.availabilityTimes) {
-      let availabilityTimes = req.body.availabilityTimes;
+    // Handle worker-specific fields only if user is a worker
+    if (role === "worker") {
+      // Handle availabilityTimes
+      if (req.body.availabilityTimes) {
+        let availabilityTimes = req.body.availabilityTimes;
 
-      if (typeof availabilityTimes === "string") {
-        try {
-          availabilityTimes = JSON.parse(availabilityTimes);
-        } catch (e) {
-          return res.status(400).json({ message: "Invalid availability format" });
+        if (typeof availabilityTimes === "string") {
+          try {
+            availabilityTimes = JSON.parse(availabilityTimes);
+          } catch (e) {
+            return res
+              .status(400)
+              .json({ message: "Invalid availability format" });
+          }
+        }
+
+        updatedFields.availabilityTimes = availabilityTimes;
+      }
+
+      // Handle isAvailable boolean field
+      if (typeof req.body.isAvailable === "boolean") {
+        updatedFields.isAvailable = req.body.isAvailable;
+      }
+
+      // Handle experienceYears
+      if (req.body.experienceYears !== undefined) {
+        const experienceYears = parseInt(req.body.experienceYears);
+        if (!isNaN(experienceYears) && experienceYears >= 0) {
+          updatedFields.experienceYears = experienceYears;
         }
       }
 
-      updatedFields.availabilityTimes = availabilityTimes;
+      // Handle bookingsAday
+      if (req.body.bookingsAday !== undefined) {
+        const bookingsAday = parseInt(req.body.bookingsAday);
+        if (!isNaN(bookingsAday) && bookingsAday >= 0) {
+          updatedFields.bookingsAday = bookingsAday;
+        }
+      }
     }
 
     // No fields to update
     if (Object.keys(updatedFields).length === 0) {
-      return res.status(400).json({ message: "No valid fields provided for update" });
+      return res
+        .status(400)
+        .json({ message: "No valid fields provided for update" });
     }
 
     const updatedUser = await User.findByIdAndUpdate(userId, updatedFields, {
@@ -123,6 +151,25 @@ export const updateAccountDetails = async (req, res) => {
       .json({ message: "Account updated successfully", user: updatedUser });
   } catch (error) {
     console.error("Update account error:", error);
+    res.status(500).json({ message: "Something went wrong" });
+  }
+};
+
+export const updateStatus = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { isAvailable } = req.body;
+
+    const updatedUser = await User.findByIdAndUpdate(userId, { isAvailable }, {
+      new: true,
+      runValidators: true,
+    }).select("-password -refreshToken");
+
+    res
+      .status(200)
+      .json({ message: "Status updated successfully", user: updatedUser });
+  } catch (error) {
+    console.error("Update status error:", error);
     res.status(500).json({ message: "Something went wrong" });
   }
 };
@@ -145,7 +192,9 @@ export const updateProfilePhoto = async (req, res) => {
     const image = await uploadCloudinary(imagePath);
 
     if (!image.url) {
-      return res.status(400).json({ message: "Failed to upload profile photo" });
+      return res
+        .status(400)
+        .json({ message: "Failed to upload profile photo" });
     }
 
     // Get the current user to access the old photo URL
@@ -164,7 +213,7 @@ export const updateProfilePhoto = async (req, res) => {
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $set: { photo: image.url } },
-      { new: true }
+      { new: true },
     ).select("-password -refreshToken");
 
     res.status(200).json({
@@ -410,7 +459,9 @@ export const findNearbyWorkers = async (req, res) => {
     const { latitude, longitude, radius = 10, serviceCategory } = req.query;
 
     if (!latitude || !longitude) {
-      return res.status(400).json({ message: "Latitude and longitude are required" });
+      return res
+        .status(400)
+        .json({ message: "Latitude and longitude are required" });
     }
 
     const coordinates = [parseFloat(longitude), parseFloat(latitude)];
@@ -418,6 +469,7 @@ export const findNearbyWorkers = async (req, res) => {
 
     const query = {
       role: "worker",
+      isAvailable: true,
       location: {
         $near: {
           $geometry: { type: "Point", coordinates },
@@ -431,7 +483,7 @@ export const findNearbyWorkers = async (req, res) => {
     }
 
     const workers = await User.find(query).select(
-      "_id fullName profession email photo address availabilityTimes location completedJobs totalEarnings"
+      "_id fullName profession email photo address availabilityTimes location completedJobs totalEarnings",
     );
 
     res.status(200).json({ success: true, workers });

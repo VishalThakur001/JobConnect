@@ -106,6 +106,28 @@ export const jobApplicationService = {
       };
     }
   },
+
+  // Customer accepts application and creates booking
+  acceptApplication: async (jobId, applicationId) => {
+    try {
+      const response = await axiosInstance.post(
+        `${import.meta.env.VITE_API_BASE_URL}/bookings/create-from-application`,
+        { jobId, applicationId },
+      );
+      return {
+        success: true,
+        data: response.data.booking,
+        message: response.data.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to accept application",
+        error: error.response?.data,
+      };
+    }
+  },
 };
 
 export default jobApplicationService;

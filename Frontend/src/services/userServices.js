@@ -9,7 +9,7 @@ export const userServices = {
       return {
         success: true,
         data: response.data,
-        message: response.data.message,
+        message: response.data.msessage,
       };
     } catch (error) {
       return {
@@ -35,6 +35,26 @@ export const userServices = {
       return {
         success: false,
         message: error.response?.data?.message || "Failed to update user",
+        error: error.response?.data,
+      };
+    }
+  },
+
+  updateStatus: async (status) => {
+    try {
+      const response = await axiosInstance.put(
+        `${BASE_URL}/me/update-status`,
+        status,
+      );
+      return {
+        success: true,
+        data: response.data,
+        message: response.data.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message: error.response?.data?.message || "Failed to update status",
         error: error.response?.data,
       };
     }

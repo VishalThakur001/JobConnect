@@ -46,3 +46,18 @@ export const useConfirmApplication = () => {
     },
   });
 };
+
+// Accept application and create booking
+export const useAcceptApplication = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ jobId, applicationId }) =>
+      jobApplicationService.acceptApplication(jobId, applicationId),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(["applications"]);
+      queryClient.invalidateQueries(["customerBookings"]);
+      queryClient.invalidateQueries(["workerBookings"]);
+      return data;
+    },
+  });
+};

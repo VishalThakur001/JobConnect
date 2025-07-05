@@ -4,6 +4,7 @@ import { useJobById } from "../hooks/useJob";
 import {
   useJobApplications,
   useUpdateApplicationStatus,
+  useAcceptApplication,
 } from "../hooks/useApplication";
 import { Button } from "../components/ui/button";
 import {
@@ -48,24 +49,41 @@ export default function JobApplicationsPage() {
     refetch,
   } = useJobApplications(jobId);
   const updateStatusMutation = useUpdateApplicationStatus();
+  const acceptApplicationMutation = useAcceptApplication();
 
   const applications = applicationsData?.data || [];
 
   const handleStatusUpdate = async (applicationId, status) => {
     setProcessingAppId(applicationId);
     try {
-      const result = await updateStatusMutation.mutateAsync({
-        applicationId,
-        status,
-      });
+      if (status === "accepted") {
+        // Use accept application to create booking
+        const result = await acceptApplicationMutation.mutateAsync({
+          jobId,
+          applicationId,
+        });
 
-      if (result.success) {
-        toast.success(
-          `Application ${status === "accepted" ? "accepted" : "rejected"} successfully`,
-        );
-        refetch();
+        if (result.success) {
+          toast.success(
+            "Application accepted and booking created successfully!",
+          );
+          refetch();
+        } else {
+          toast.error(result.message || "Failed to accept application");
+        }
       } else {
-        toast.error(result.message || `Failed to ${status} application`);
+        // Use regular status update for rejection
+        const result = await updateStatusMutation.mutateAsync({
+          applicationId,
+          status,
+        });
+
+        if (result.success) {
+          toast.success("Application rejected successfully");
+          refetch();
+        } else {
+          toast.error(result.message || "Failed to reject application");
+        }
       }
     } catch (error) {
       toast.error(`Failed to ${status} application`);

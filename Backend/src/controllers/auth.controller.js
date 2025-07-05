@@ -144,13 +144,16 @@ export const registerUser = async (req, res) => {
       photo,
       address,
       availabilityTimes,
-    });
+      isAvailable: role === "worker" ? true : undefined,
+    }).select("-password -refreshToken");
 
     const accessToken = await user.generateAccessToken();
     const refreshToken = await user.generateRefreshToken();
 
     user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false });
+
+    const userToSend = await User.findById(user._id).select("-password -refreshToken");
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
@@ -161,13 +164,7 @@ export const registerUser = async (req, res) => {
 
     res.status(201).json({
       message: "Registration successful",
-      user: {
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        profession: user.profession,
-      },
+      user : userToSend,
       accessToken,
     });
   } catch (error) {
@@ -194,7 +191,8 @@ export const loginUser = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
 
-    if (!user.isPasswordCorrect(password)) {
+    const isMatch = await user.isPasswordCorrect(password);
+    if (!isMatch) {
       return res.status(401).json({ message: "Wrong Password" });
     }
 
@@ -206,20 +204,16 @@ export const loginUser = async (req, res) => {
 
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: false,
+      secure: false, // set to true in production with HTTPS
       sameSite: "Lax",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
+
+    const userToSend = await User.findById(user._id).select("-password -refreshToken");
 
     res.status(200).json({
       message: "Login successful",
-      user: {
-        _id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
-        profession: user.profession,
-      },
+      user: userToSend,
       accessToken,
     });
   } catch (error) {

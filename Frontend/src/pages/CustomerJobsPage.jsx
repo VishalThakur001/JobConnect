@@ -143,12 +143,20 @@ export default function CustomerJobsPage() {
               Manage your job posts and view applications
             </p>
           </div>
-          <Button asChild>
-            <Link to="/customer/post-job">
-              <Plus className="w-4 h-4 mr-2" />
-              Post New Job
-            </Link>
-          </Button>
+          <div className="flex items-center space-x-3">
+            <Button variant="outline" asChild>
+              <Link to="/customer/bookings">
+                <Calendar className="w-4 h-4 mr-2" />
+                My Bookings
+              </Link>
+            </Button>
+            <Button asChild>
+              <Link to="/customer/post-job">
+                <Plus className="w-4 h-4 mr-2" />
+                Post New Job
+              </Link>
+            </Button>
+          </div>
         </div>
 
         {/* Stats Overview */}

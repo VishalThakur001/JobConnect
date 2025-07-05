@@ -59,6 +59,22 @@ export const useUpdateProfile = () => {
   });
 };
 
+export const useUpdateStatus = () => {
+  const dispatch = useDispatch();
+  return useMutation({
+    mutationFn: (isAvailable) => userServices.updateStatus(isAvailable),
+    onSuccess: (data) => {
+      if (data.success) {
+        dispatch(updateUser(data.data.user));
+        toast.success(data.message || "Status updated successfully");
+      }
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to update status");
+    },
+  });
+}
+
 // Change password
 export const useChangePassword = () => {
   return useMutation({

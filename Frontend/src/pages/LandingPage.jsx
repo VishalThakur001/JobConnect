@@ -124,7 +124,7 @@ export default function LandingPage() {
                     variant="outline"
                     size="lg"
                     asChild
-                    className="w-full sm:w-auto"
+                    className="w-full sm:w-auto enhanced-shadow"
                   >
                     <Link to="/how-it-works">
                       <ArrowRight className="w-5 h-5 mr-2" />
@@ -135,11 +135,7 @@ export default function LandingPage() {
               ) : (
                 <Button size="lg" asChild className="w-full sm:w-auto">
                   <Link
-                    to={
-                      role === "worker"
-                        ? "/worker/home"
-                        : "/customer/home"
-                    }
+                    to={role === "worker" ? "/worker/home" : "/customer/home"}
                   >
                     <ArrowRight className="w-5 h-5 mr-2" />
                     Lets Start
@@ -383,11 +379,7 @@ export default function LandingPage() {
             ) : (
               <Button size="lg" variant="secondary" asChild>
                 <Link
-                  to={
-                    role === "worker"
-                      ? "/worker/home"
-                      : "/customer/home"
-                  }
+                  to={role === "worker" ? "/worker/home" : "/customer/home"}
                 >
                   <ArrowRight className="w-5 h-5 mr-2" />
                   Go to Home

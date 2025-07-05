@@ -15,6 +15,7 @@ import {
 import { Button } from "./ui/button";
 import { logout } from "../features/userSlice";
 import { cn } from "../utils/cn";
+import UserAvatar from "./UserAvatar";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -66,15 +67,16 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-sm">
-                JC
-              </span>
+          <Link to="/" className="flex items-center space-x-3">
+            <div className="w-10 h-10 jobconnect-gradient rounded-xl flex items-center justify-center shadow-lg transform transition-transform hover:scale-105">
+              <span className="text-white font-bold text-lg">JC</span>
             </div>
-            <span className="font-bold text-xl text-foreground">
-              JobConnect
-            </span>
+            <div>
+              <span className="font-bold text-xl bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                JobConnect
+              </span>
+              <div className="h-0.5 w-full bg-gradient-to-r from-blue-400 to-purple-500 rounded-full"></div>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
@@ -94,21 +96,18 @@ export default function Navbar() {
           <div className="hidden md:flex items-center space-x-3">
             {isAuthenticated ? (
               <div className="flex items-center space-x-3">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
-                    <span className="text-secondary-foreground text-sm font-medium">
-                      {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                    </span>
-                  </div>
-                  <div className="hidden lg:block">
-                    <p className="text-sm font-medium text-foreground">
-                      {user?.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground capitalize">
-                      {role}
-                    </p>
-                  </div>
-                </div>
+                <UserAvatar
+                  user={{ ...user, role }}
+                  size="sm"
+                  showName={true}
+                  showRole={true}
+                  className="hidden lg:flex"
+                />
+                <UserAvatar
+                  user={{ ...user, role }}
+                  size="sm"
+                  className="lg:hidden"
+                />
                 <Button
                   variant="ghost"
                   size="sm"
@@ -167,20 +166,13 @@ export default function Navbar() {
           <div className="pt-4 border-t border-border">
             {isAuthenticated ? (
               <>
-                <div className="flex items-center space-x-2 px-3 py-2">
-                  <div className="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
-                    <span className="text-secondary-foreground text-sm font-medium">
-                      {user?.name?.charAt(0)?.toUpperCase() || "U"}
-                    </span>
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">
-                      {user?.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground capitalize">
-                      {role}
-                    </p>
-                  </div>
+                <div className="px-3 py-2">
+                  <UserAvatar
+                    user={{ ...user, role }}
+                    size="md"
+                    showName={true}
+                    showRole={true}
+                  />
                 </div>
                 <Button
                   variant="ghost"
