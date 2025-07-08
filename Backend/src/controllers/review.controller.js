@@ -98,7 +98,7 @@ export const deleteReview = async (req, res) => {
   }
 };
 
-// ✅ 4. Get all reviews by the customer
+// ✅ 4. Get all reviews by the customer62
 export const getMyReviews = async (req, res) => {
   try {
     const customerId = req.user._id;
@@ -111,5 +111,36 @@ export const getMyReviews = async (req, res) => {
   } catch (error) {
     console.error("Get my reviews error:", error);
     res.status(500).json({ success: false, message: "Failed to fetch reviews" });
+  }
+};
+
+// ✅ 5. Get all reviews received by the worker
+export const getWorkerReviews = async (req, res) => {
+  try {
+    const workerId = req.user._id;
+
+    const reviews = await Review.find({ workerId })
+      .populate("customerId", "fullName photo")
+      .populate("bookingId", "scheduledDate serviceCategory status");
+
+    res.status(200).json({ success: true, reviews });
+  } catch (error) {
+    console.error("Get worker reviews error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch worker reviews" });
+  }
+};
+
+export const getReviewsForWorker = async (req, res) => {
+  try {
+    const { workerId } = req.params;
+
+    const reviews = await Review.find({ workerId })
+      .populate("customerId", "fullName photo")
+      .populate("bookingId", "scheduledDate serviceCategory status");
+
+    res.status(200).json({ success: true, reviews });
+  } catch (error) {
+    console.error("Get reviews for worker error:", error);
+    res.status(500).json({ success: false, message: "Failed to fetch reviews for worker" });
   }
 };

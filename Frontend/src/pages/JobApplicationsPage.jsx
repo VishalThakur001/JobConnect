@@ -28,6 +28,8 @@ import {
   Phone,
   Mail,
   Award,
+  Eye,
+  Info,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { cn } from "../utils/cn";
@@ -89,6 +91,13 @@ export default function JobApplicationsPage() {
       toast.error(`Failed to ${status} application`);
     } finally {
       setProcessingAppId(null);
+    }
+  };
+
+  const handleViewWorkerDetails = (application) => {
+    const workerId = application.workerId?._id;
+    if (workerId) {
+      navigate(`/worker/profile/${workerId}`);
     }
   };
 
@@ -259,17 +268,41 @@ export default function JobApplicationsPage() {
                                 ?.toUpperCase() || "W"}
                             </span>
                           </div>
-                          <div>
-                            <h3 className="text-lg font-semibold text-foreground">
-                              {application.workerId?.fullName || "Worker"}
-                            </h3>
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2">
+                              <h3 className="text-lg font-semibold text-foreground">
+                                {application.workerId?.fullName || "Worker"}
+                              </h3>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() =>
+                                  handleViewWorkerDetails(application)
+                                }
+                                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 px-2 py-1 h-auto"
+                              >
+                                <Info className="w-4 h-4 mr-1" />
+                                View Details
+                              </Button>
+                            </div>
                             <p className="text-sm text-muted-foreground capitalize">
                               {application.workerId?.profession ||
                                 "Professional"}
                             </p>
                             <div className="flex items-center text-sm text-muted-foreground mt-1">
                               <Star className="w-4 h-4 mr-1 text-yellow-500" />
-                              <span>4.8 (25 reviews)</span>
+                              <span>
+                                {application.workerId?.averageRating?.toFixed(
+                                  1,
+                                ) || "4.8"}
+                                ({application.workerId?.totalReviews || 25}{" "}
+                                reviews)
+                              </span>
+                              {application.workerId?.isVerified && (
+                                <span className="ml-2 px-2 py-0.5 bg-green-100 text-green-800 text-xs rounded-full">
+                                  Verified
+                                </span>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -392,6 +425,14 @@ export default function JobApplicationsPage() {
                           <Button variant="outline" size="sm">
                             <MessageCircle className="w-4 h-4 mr-2" />
                             Message Worker
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleViewWorkerDetails(application)}
+                          >
+                            <Eye className="w-4 h-4 mr-2" />
+                            View Profile
                           </Button>
                         </div>
                       )}

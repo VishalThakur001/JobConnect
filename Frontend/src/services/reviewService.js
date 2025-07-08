@@ -81,6 +81,48 @@ const reviewService = {
       };
     }
   },
+
+  // Get all reviews received by the current worker
+  getWorkerReviews: async () => {
+    try {
+      const response = await axiosInstance.get(`${BASE_URL}/worker-reviews`);
+      return {
+        success: true,
+        data: response.data.reviews || [],
+        stats: response.data.stats || {},
+        message: response.data.message || "Fetched successfully",
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to fetch worker reviews",
+        error: error.response?.data,
+      };
+    }
+  },
+
+  // Get all reviews for a specific worker by ID
+  getWorkerReviewsById: async (workerId) => {
+    try {
+      const response = await axiosInstance.get(
+        `${BASE_URL}/worker/${workerId}/reviews`,
+      );
+      return {
+        success: true,
+        data: response.data.reviews || [],
+        stats: response.data.stats || {},
+        message: response.data.message || "Fetched successfully",
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to fetch worker reviews",
+        error: error.response?.data,
+      };
+    }
+  },
 };
 
 export default reviewService;

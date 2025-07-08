@@ -5,6 +5,8 @@ import toast from "react-hot-toast";
 // QUERY KEYS
 const keys = {
   myReviews: ["myReviews"],
+  workerReviews: ["workerReviews"],
+  workerReviewsById: (workerId) => ["workerReviews", workerId],
 };
 
 // ✅ GET: All reviews by current customer
@@ -13,6 +15,23 @@ export const useMyReviews = () =>
     queryKey: keys.myReviews,
     queryFn: () => reviewService.getMyReviews(),
     select: (res) => res.data,
+  });
+
+// ✅ GET: All reviews received by current worker
+export const useWorkerReviews = () =>
+  useQuery({
+    queryKey: keys.workerReviews,
+    queryFn: () => reviewService.getWorkerReviews(),
+    select: (res) => res,
+  });
+
+// ✅ GET: All reviews for a specific worker by ID
+export const useWorkerReviewsById = (workerId) =>
+  useQuery({
+    queryKey: keys.workerReviewsById(workerId),
+    queryFn: () => reviewService.getWorkerReviewsById(workerId),
+    select: (res) => res,
+    enabled: !!workerId,
   });
 
 // ✅ POST: Submit a review for a booking

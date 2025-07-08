@@ -141,6 +141,26 @@ export const userServices = {
     }
   },
 
+  getWorkerById: async (workerId) => {
+    try {
+      const response = await axiosInstance.get(
+        `${BASE_URL}/worker/${workerId}`,
+      );
+      return {
+        success: true,
+        data: response.data.user || response.data,
+        message: response.data.message,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message || "Failed to get worker details",
+        error: error.response?.data,
+      };
+    }
+  },
+
   findWorkers: async () => {
     try {
       const response = await axiosInstance.get(`${BASE_URL}/nearby-workers`);

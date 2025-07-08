@@ -28,42 +28,20 @@ import {
 } from "../components/ui/card";
 import { cn } from "../utils/cn";
 import UserAvatar from "../components/UserAvatar";
+import { useCustomerBookings } from "../hooks/useBooking";
 
 export default function CustomerHomePage() {
   const { user } = useSelector((state) => state.user);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Mock data - replace with real API calls
-  const recentBookings = [
-    {
-      id: 1,
-      serviceName: "Home Cleaning",
-      workerName: "Sarah Johnson",
-      date: "2024-01-15",
-      time: "10:00 AM",
-      status: "completed",
-      rating: 5,
-      amount: 150,
-    },
-    {
-      id: 2,
-      serviceName: "Plumbing Repair",
-      workerName: "Mike Wilson",
-      date: "2024-01-20",
-      time: "2:00 PM",
-      status: "upcoming",
-      amount: 200,
-    },
-    {
-      id: 3,
-      serviceName: "Electrical Work",
-      workerName: "David Chen",
-      date: "2024-01-10",
-      time: "9:00 AM",
-      status: "in-progress",
-      amount: 180,
-    },
-  ];
+  // Fetch real booking data
+  const {
+    data: bookingsData,
+    isLoading: bookingsLoading,
+    error: bookingsError,
+  } = useCustomerBookings();
+  const recentBookings = bookingsData || [];
+  const bookingStats = bookingsData?.stats || {};
 
   const popularServices = [
     { name: "Home Cleaning", icon: "🏠", bookings: 145 },
@@ -74,21 +52,48 @@ export default function CustomerHomePage() {
     { name: "Pet Care", icon: "🐕", bookings: 54 },
   ];
 
+  // Calculate real stats from booking data
+  const totalBookings = recentBookings?.length || 0;
+  const completedBookings =
+    recentBookings?.filter((booking) => booking.status === "completed")
+      ?.length || 0;
+  const upcomingBookings =
+    recentBookings?.filter(
+      (booking) =>
+        booking.status === "upcoming" || booking.status === "accepted",
+    )?.length || 0;
+  const favoriteWorkers = 0; // This would need a separate API call for favorites
+
   const stats = [
     {
       label: "Total Bookings",
-      value: "12",
+      value: bookingStats.total || totalBookings.toString(),
       icon: Calendar,
       color: "text-blue-600",
     },
     {
       label: "Completed",
-      value: "8",
+      value: bookingStats.completed || completedBookings.toString(),
       icon: CheckCircle,
       color: "text-green-600",
     },
-    { label: "Upcoming", value: "2", icon: Clock, color: "text-orange-600" },
-    { label: "Favorites", value: "5", icon: Heart, color: "text-red-600" },
+    {
+      label: "Upcoming",
+      value: bookingStats.upcoming || upcomingBookings.toString(),
+      icon: Clock,
+      color: "text-orange-600",
+    },
+    {
+      label: "In Progress",
+      value:
+        bookingStats.inProgress ||
+        recentBookings
+          ?.filter((booking) => booking.status === "in-progress")
+          ?.length?.toString() ||
+        "0",
+      icon: AlertCircle,
+      color: "text-purple-600",
+    },
   ];
 
   const getStatusColor = (status) => {
@@ -279,47 +284,87 @@ export default function CustomerHomePage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {recentBookings.filter(
-                  (booking) =>
-                    booking.status === "upcoming" ||
-                    booking.status === "in-progress",
-                ).length > 0 ? (
+                {bookingsLoading ? (
+                  <div className="text-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                    <p className="text-muted-foreground">
+                      Loading your schedule...
+                    </p>
+                  </div>
+                ) : bookingsError ? (
+                  <div className="text-center py-8">
+                    <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+                    <p className="text-red-600 mb-4">
+                      Failed to load your bookings
+                    </p>
+                    <Button
+                      variant="outline"
+                      onClick={() => window.location.reload()}
+                    >
+                      Try Again
+                    </Button>
+                  </div>
+                ) : recentBookings.filter(
+                    (booking) =>
+                      booking.status === "upcoming" ||
+                      booking.status === "in-progress" ||
+                      booking.status === "accepted",
+                  ).length > 0 ? (
                   <div className="space-y-4">
                     {recentBookings
                       .filter(
                         (booking) =>
                           booking.status === "upcoming" ||
-                          booking.status === "in-progress",
+                          booking.status === "in-progress" ||
+                          booking.status === "accepted",
                       )
                       .map((booking) => {
                         const StatusIcon = getStatusIcon(booking.status);
                         return (
                           <div
-                            key={booking.id}
+                            key={booking._id}
                             className="p-4 border rounded-lg hover:bg-accent/50 transition-colors"
                           >
                             <div className="flex items-start justify-between">
                               <div className="space-y-1">
                                 <h4 className="font-semibold text-foreground">
-                                  {booking.serviceName}
+                                  {booking.job?.title ||
+                                    booking.job?.category ||
+                                    "Service"}
                                 </h4>
                                 <p className="text-sm text-muted-foreground">
-                                  Worker: {booking.workerName}
+                                  Worker:{" "}
+                                  {booking.worker?.fullName ||
+                                    "Assigned Worker"}
                                 </p>
                                 <div className="flex items-center space-x-4 text-xs text-muted-foreground">
                                   <span className="flex items-center">
                                     <Clock className="w-3 h-3 mr-1" />
-                                    {booking.time}
+                                    {booking.scheduledTime
+                                      ? new Date(
+                                          booking.scheduledTime,
+                                        ).toLocaleTimeString([], {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })
+                                      : "TBD"}
                                   </span>
                                   <span className="flex items-center">
                                     <Calendar className="w-3 h-3 mr-1" />
-                                    {booking.date}
+                                    {booking.scheduledDate
+                                      ? new Date(
+                                          booking.scheduledDate,
+                                        ).toLocaleDateString()
+                                      : "TBD"}
                                   </span>
                                 </div>
                               </div>
                               <div className="text-right space-y-2">
                                 <p className="font-semibold text-foreground">
-                                  ${booking.amount}
+                                  $
+                                  {booking.totalAmount ||
+                                    booking.job?.budget ||
+                                    0}
                                 </p>
                                 <span
                                   className={cn(
@@ -398,97 +443,151 @@ export default function CustomerHomePage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {recentBookings.map((booking) => {
-                    const StatusIcon = getStatusIcon(booking.status);
-                    return (
-                      <div
-                        key={booking.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <div
-                            className={cn(
-                              "p-2 rounded-full",
-                              getStatusColor(booking.status),
-                            )}
-                          >
-                            <StatusIcon className="w-4 h-4" />
+                  {bookingsLoading ? (
+                    <div className="text-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                      <p className="text-muted-foreground">
+                        Loading bookings...
+                      </p>
+                    </div>
+                  ) : recentBookings.length === 0 ? (
+                    <div className="text-center py-8">
+                      <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                      <p className="text-muted-foreground mb-4">
+                        No bookings yet
+                      </p>
+                      <Button asChild>
+                        <Link to="/customer/post-job">
+                          Book Your First Service
+                        </Link>
+                      </Button>
+                    </div>
+                  ) : (
+                    recentBookings.map((booking) => {
+                      const StatusIcon = getStatusIcon(booking.status);
+                      return (
+                        <div
+                          key={booking._id}
+                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent/50 transition-colors"
+                        >
+                          <div className="flex items-center space-x-4">
+                            <div
+                              className={cn(
+                                "p-2 rounded-full",
+                                getStatusColor(booking.status),
+                              )}
+                            >
+                              <StatusIcon className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h4 className="font-semibold text-foreground">
+                                {booking.job?.title ||
+                                  booking.job?.category ||
+                                  "Service"}
+                              </h4>
+                              <p className="text-sm text-muted-foreground">
+                                with{" "}
+                                {booking.worker?.fullName || "Assigned Worker"}
+                              </p>
+                              <div className="flex items-center space-x-4 text-xs text-muted-foreground mt-1">
+                                <span className="flex items-center">
+                                  <Calendar className="w-3 h-3 mr-1" />
+                                  {booking.scheduledDate
+                                    ? new Date(
+                                        booking.scheduledDate,
+                                      ).toLocaleDateString()
+                                    : "TBD"}
+                                </span>
+                                <span className="flex items-center">
+                                  <Clock className="w-3 h-3 mr-1" />
+                                  {booking.scheduledTime
+                                    ? new Date(
+                                        booking.scheduledTime,
+                                      ).toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })
+                                    : "TBD"}
+                                </span>
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-semibold text-foreground">
-                              {booking.serviceName}
-                            </h4>
-                            <p className="text-sm text-muted-foreground">
-                              with {booking.workerName}
+                          <div className="text-right">
+                            <p className="font-semibold text-foreground mb-2">
+                              ${booking.totalAmount || booking.job?.budget || 0}
                             </p>
-                            <div className="flex items-center space-x-4 text-xs text-muted-foreground mt-1">
-                              <span className="flex items-center">
-                                <Calendar className="w-3 h-3 mr-1" />
-                                {booking.date}
-                              </span>
-                              <span className="flex items-center">
-                                <Clock className="w-3 h-3 mr-1" />
-                                {booking.time}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold text-foreground mb-2">
-                            ${booking.amount}
-                          </p>
-                          {booking.rating && (
-                            <div className="flex items-center text-yellow-500 text-sm mb-2">
-                              <Star className="w-3 h-3 mr-1 fill-current" />
-                              {booking.rating}
-                            </div>
-                          )}
-                          <span
-                            className={cn(
-                              "text-xs px-2 py-1 rounded-full capitalize block mb-3",
-                              getStatusColor(booking.status),
+                            {booking.rating && (
+                              <div className="flex items-center text-yellow-500 text-sm mb-2">
+                                <Star className="w-3 h-3 mr-1 fill-current" />
+                                {booking.rating}
+                              </div>
                             )}
-                          >
-                            {booking.status}
-                          </span>
-                          <div className="flex flex-col space-y-1">
-                            {booking.status === "upcoming" && (
+                            <span
+                              className={cn(
+                                "text-xs px-2 py-1 rounded-full capitalize block mb-3",
+                                getStatusColor(booking.status),
+                              )}
+                            >
+                              {booking.status}
+                            </span>
+                            <div className="flex flex-col space-y-1">
+                              {(booking.status === "upcoming" ||
+                                booking.status === "accepted") && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs"
+                                  asChild
+                                >
+                                  <Link
+                                    to={`/customer/bookings/${booking._id}`}
+                                  >
+                                    Reschedule
+                                  </Link>
+                                </Button>
+                              )}
+                              {(booking.status === "upcoming" ||
+                                booking.status === "accepted" ||
+                                booking.status === "in-progress") && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs text-red-600 hover:text-red-700"
+                                  asChild
+                                >
+                                  <Link
+                                    to={`/customer/bookings/${booking._id}`}
+                                  >
+                                    Cancel
+                                  </Link>
+                                </Button>
+                              )}
+                              {booking.status === "completed" &&
+                                !booking.rating && (
+                                  <Button size="sm" className="text-xs" asChild>
+                                    <Link
+                                      to={`/customer/bookings/${booking._id}/review`}
+                                    >
+                                      Rate Service
+                                    </Link>
+                                  </Button>
+                                )}
                               <Button
                                 size="sm"
                                 variant="outline"
                                 className="text-xs"
+                                asChild
                               >
-                                Reschedule
+                                <Link to={`/customer/bookings/${booking._id}`}>
+                                  View Details
+                                </Link>
                               </Button>
-                            )}
-                            {(booking.status === "upcoming" ||
-                              booking.status === "in-progress") && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                className="text-xs text-red-600 hover:text-red-700"
-                              >
-                                Cancel
-                              </Button>
-                            )}
-                            {booking.status === "completed" &&
-                              !booking.rating && (
-                                <Button size="sm" className="text-xs">
-                                  Rate Service
-                                </Button>
-                              )}
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              className="text-xs"
-                            >
-                              View Details
-                            </Button>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    })
+                  )}
                 </div>
               </CardContent>
             </Card>

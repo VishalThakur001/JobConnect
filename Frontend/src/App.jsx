@@ -23,6 +23,8 @@ import CustomerJobsPage from "./pages/CustomerJobsPage";
 import JobApplicationsPage from "./pages/JobApplicationsPage";
 import CustomerBookingsPage from "./pages/CustomerBookingsPage";
 import WorkerBookingsPage from "./pages/WorkerBookingsPage";
+import WorkerReviewsPage from "./pages/WorkerReviewsPage";
+import WorkerProfilePage from "./pages/WorkerProfilePage";
 import AuthLayout from "./components/authLayout";
 
 function App() {
@@ -189,6 +191,22 @@ function App() {
           element={
             <AuthLayout>
               <WorkerBookingsPage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/worker/reviews"
+          element={
+            <AuthLayout>
+              <WorkerReviewsPage />
+            </AuthLayout>
+          }
+        />
+        <Route
+          path="/worker/profile/:workerId"
+          element={
+            <AuthLayout>
+              <WorkerProfilePage />
             </AuthLayout>
           }
         />

@@ -13,6 +13,16 @@ export const useGetProfile = () => {
   });
 };
 
+// Get worker details by ID
+export const useGetWorkerById = (workerId) => {
+  return useQuery({
+    queryKey: ["worker", workerId],
+    queryFn: () => userServices.getWorkerById(workerId),
+    select: (data) => data.data,
+    enabled: !!workerId,
+  });
+};
+
 // Update profile (matches backend updateAccountDetails exactly)
 export const useUpdateProfile = () => {
   const dispatch = useDispatch();
@@ -73,7 +83,7 @@ export const useUpdateStatus = () => {
       toast.error(error.message || "Failed to update status");
     },
   });
-}
+};
 
 // Change password
 export const useChangePassword = () => {
