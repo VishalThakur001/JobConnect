@@ -36,7 +36,6 @@ import {
 } from "../components/ui/card";
 import { cn } from "../utils/cn";
 import { useGetWorkerById } from "../hooks/useProfile";
-import { useWorkerReviewsById } from "../hooks/useReview";
 import UserAvatar from "../components/UserAvatar";
 
 export default function WorkerProfilePage() {
@@ -45,21 +44,21 @@ export default function WorkerProfilePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterRating, setFilterRating] = useState("");
 
-  // Fetch worker details and their reviews
+  // Fetch worker details (includes reviews)
   const {
     data: workerDetails,
     isLoading: workerLoading,
     error: workerError,
   } = useGetWorkerById(workerId);
 
-  console.log(workerDetails);
+  console.log("Worker Details:", workerDetails);
+  console.log("Worker Loading:", workerLoading);
+  console.log("Worker Error:", workerError);
+  console.log("Worker Details Data:", workerDetails?.data);
+  console.log("Worker Details Reviews:", workerDetails?.data.reviews);
 
-  // Get worker's reviews directly
-  const { data: reviewsResponse, isLoading: reviewsLoading } =
-    useWorkerReviewsById(workerId);
-
-  // Extract reviews from the response
-  const workerReviews = reviewsResponse?.data || [];
+  // Extract reviews from worker details
+  const workerReviews = workerDetails?.data?.reviews || [];
 
   // Filter reviews based on search and rating
   const filteredReviews = workerReviews.filter((review) => {
@@ -94,12 +93,32 @@ export default function WorkerProfilePage() {
     );
   };
 
-  const formatAddress = (address) => {
-    if (!address) return "Location not specified";
-    return `${address.city || ""}, ${address.state || ""}`.replace(
-      /^, |, $/,
-      "",
-    );
+  const formatFullAddress = (address) => {
+    if (!address) return "Address not specified";
+    const parts = [];
+    if (address.street) parts.push(address.street);
+    if (address.city) parts.push(address.city);
+    if (address.state) parts.push(address.state);
+    if (address.pincode) parts.push(address.pincode);
+    return parts.join(", ") || "Address not specified";
+  };
+
+  const handleContactWorker = () => {
+    const phone = workerDetails?.data?.phoneNumber;
+    if (phone) {
+      window.open(`tel:${phone}`, "_self");
+    }
+  };
+
+  const handleMessageWorker = () => {
+    const email = workerDetails?.data?.email;
+    const phone = workerDetails?.data?.phoneNumber;
+
+    if (email) {
+      window.open(`mailto:${email}?subject=Service Inquiry`, "_blank");
+    } else if (phone) {
+      window.open(`sms:${phone}`, "_self");
+    }
   };
 
   const getExperienceLevel = (years) => {
@@ -141,7 +160,7 @@ export default function WorkerProfilePage() {
         : 0,
   }));
 
-  if (workerLoading || reviewsLoading) {
+  if (workerLoading) {
     return (
       <div className="min-h-screen bg-background">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -222,16 +241,16 @@ export default function WorkerProfilePage() {
               <div className="flex-1 text-center lg:text-left">
                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
                   <h1 className="text-3xl font-bold text-foreground mb-2 lg:mb-0">
-                    {workerDetails.fullName || "Worker"}
+                    {workerDetails.data.fullName || "Worker"}
                   </h1>
                   <div className="flex items-center justify-center lg:justify-end space-x-2">
-                    {workerDetails.isVerified && (
+                    {workerDetails.data.isVerified && (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Verified
                       </span>
                     )}
-                    {workerDetails.isAvailable ? (
+                    {workerDetails.data.isAvailable ? (
                       <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                         <div className="w-2 h-2 bg-green-500 rounded-full mr-1 animate-pulse" />
                         Available
@@ -246,7 +265,7 @@ export default function WorkerProfilePage() {
                 </div>
 
                 <p className="text-xl text-muted-foreground capitalize font-medium mb-6">
-                  {workerDetails.profession || "Professional Service Provider"}
+                  {workerDetails.data.profession || "Professional Service Provider"}
                 </p>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -259,7 +278,7 @@ export default function WorkerProfilePage() {
                         {averageRating}
                       </span>
                       <span className="text-sm text-muted-foreground ml-1">
-                        ({totalReviews || workerDetails.totalReviews || 0}{" "}
+                        ({totalReviews || workerDetails.data.totalReviews || 0}{" "}
                         reviews)
                       </span>
                     </div>
@@ -267,7 +286,7 @@ export default function WorkerProfilePage() {
 
                   <div className="flex items-center justify-center lg:justify-start space-x-2 text-muted-foreground">
                     <MapPin className="w-5 h-5" />
-                    <span>{formatAddress(workerDetails.address)}</span>
+                    <span>{formatFullAddress(workerDetails.data.address)}</span>
                   </div>
 
                   <div className="flex items-center justify-center lg:justify-start space-x-2 text-muted-foreground">
@@ -275,7 +294,7 @@ export default function WorkerProfilePage() {
                     <span>
                       Joined{" "}
                       {new Date(
-                        workerDetails.createdAt || Date.now(),
+                        workerDetails.data.createdAt || Date.now(),
                       ).toLocaleDateString("en-US", {
                         month: "long",
                         year: "numeric",
@@ -285,13 +304,24 @@ export default function WorkerProfilePage() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                  <Button className="flex-1 sm:flex-none">
+                  <Button
+                    className="flex-1 sm:flex-none"
+                    onClick={handleMessageWorker}
+                    disabled={
+                      !workerDetails.data.email && !workerDetails.data.phoneNumber
+                    }
+                  >
                     <MessageCircle className="w-4 h-4 mr-2" />
                     Message Worker
                   </Button>
-                  <Button variant="outline" className="flex-1 sm:flex-none">
+                  <Button
+                    variant="outline"
+                    className="flex-1 sm:flex-none"
+                    onClick={handleContactWorker}
+                    disabled={!workerDetails.data.phoneNumber}
+                  >
                     <Phone className="w-4 h-4 mr-2" />
-                    Contact
+                    Call Now
                   </Button>
                 </div>
               </div>
@@ -307,7 +337,7 @@ export default function WorkerProfilePage() {
                 <Briefcase className="w-6 h-6 text-blue-600" />
               </div>
               <p className="text-2xl font-bold text-foreground">
-                {workerDetails.completedJobs || 0}
+                {workerDetails.data.completedJobs || 0}
               </p>
               <p className="text-sm text-muted-foreground">Jobs Completed</p>
             </CardContent>
@@ -319,7 +349,7 @@ export default function WorkerProfilePage() {
                 <DollarSign className="w-6 h-6 text-green-600" />
               </div>
               <p className="text-2xl font-bold text-foreground">
-                ${workerDetails.totalEarnings || 0}
+                ${workerDetails.data.totalEarnings || 0}
               </p>
               <p className="text-sm text-muted-foreground">Total Earned</p>
             </CardContent>
@@ -331,21 +361,9 @@ export default function WorkerProfilePage() {
                 <Clock className="w-6 h-6 text-yellow-600" />
               </div>
               <p className="text-2xl font-bold text-foreground">
-                {workerDetails.experienceYears || 0}
+                {workerDetails.data.experienceYears || 0}
               </p>
               <p className="text-sm text-muted-foreground">Years Experience</p>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center card-gradient border-none shadow-lg">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-3">
-                <TrendingUp className="w-6 h-6 text-purple-600" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {Math.round(workerDetails.successRate || 95)}%
-              </p>
-              <p className="text-sm text-muted-foreground">Success Rate</p>
             </CardContent>
           </Card>
         </div>
@@ -364,7 +382,7 @@ export default function WorkerProfilePage() {
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div className="space-y-4">
-                    {workerDetails.experienceYears && (
+                    {workerDetails.data.experienceYears && (
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">
                           Experience Level
@@ -377,20 +395,20 @@ export default function WorkerProfilePage() {
                           )}
                         >
                           {
-                            getExperienceLevel(workerDetails.experienceYears)
+                            getExperienceLevel(workerDetails.data.experienceYears)
                               .level
                           }
                         </span>
                       </div>
                     )}
 
-                    {workerDetails.bookingsAday && (
+                    {workerDetails.data.bookingsAday && (
                       <div className="flex items-center justify-between">
                         <span className="text-muted-foreground">
                           Max Bookings/Day
                         </span>
                         <span className="font-medium">
-                          {workerDetails.bookingsAday}
+                          {workerDetails.data.bookingsAday}
                         </span>
                       </div>
                     )}
@@ -401,66 +419,45 @@ export default function WorkerProfilePage() {
                       </span>
                       <span className="font-medium">
                         {new Date(
-                          workerDetails.createdAt || Date.now(),
+                          workerDetails.data.createdAt || Date.now(),
                         ).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
 
                   <div className="space-y-4">
-                    {workerDetails.email && (
+                    {workerDetails.data.email && (
                       <div className="flex items-center space-x-3">
                         <Mail className="w-4 h-4 text-muted-foreground" />
-                        <span className="text-sm">{workerDetails.email}</span>
+                        <span className="text-sm">{workerDetails.data.email}</span>
                       </div>
                     )}
 
-                    {workerDetails.phoneNumber && (
+                    {workerDetails.data.phoneNumber && (
                       <div className="flex items-center space-x-3">
                         <Phone className="w-4 h-4 text-muted-foreground" />
                         <span className="text-sm">
-                          {workerDetails.phoneNumber}
+                          {workerDetails.data.phoneNumber}
                         </span>
-                      </div>
-                    )}
-
-                    {workerDetails.address && (
-                      <div className="flex items-start space-x-3">
-                        <Home className="w-4 h-4 text-muted-foreground mt-0.5" />
-                        <div className="text-sm">
-                          {workerDetails.address.street && (
-                            <div>{workerDetails.address.street}</div>
-                          )}
-                          <div>
-                            {workerDetails.address.city},{" "}
-                            {workerDetails.address.state}
-                          </div>
-                          {workerDetails.address.pincode && (
-                            <div>{workerDetails.address.pincode}</div>
-                          )}
-                        </div>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {workerDetails.availabilityTimes && (
+                {workerDetails.data.availabilityTimes && (
                   <div className="mt-6 pt-6 border-t">
                     <h4 className="text-sm font-medium text-muted-foreground mb-3">
                       Availability
                     </h4>
                     <div className="flex flex-wrap gap-2">
-                      {Object.entries(workerDetails.availabilityTimes).map(
-                        ([day, available]) =>
-                          available && (
-                            <span
-                              key={day}
-                              className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full capitalize"
-                            >
-                              {day}
-                            </span>
-                          ),
-                      )}
+                      {workerDetails.data.availabilityTimes.map((slot, index) => (
+                        <span
+                          key={index}
+                          className="px-3 py-1 bg-green-100 text-green-800 text-sm rounded-full capitalize"
+                        >
+                          {slot.day} ({slot.startTime} - {slot.endTime})
+                        </span>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -538,9 +535,9 @@ export default function WorkerProfilePage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {filteredReviews.map((review) => (
+                    {filteredReviews.map((review, index) => (
                       <div
-                        key={review.id}
+                        key={index}
                         className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
                       >
                         <div className="flex items-start justify-between mb-3">
@@ -680,13 +677,22 @@ export default function WorkerProfilePage() {
                 <CardTitle>Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <Button className="w-full justify-start">
+                <Button
+                  className="w-full justify-start"
+                  onClick={handleMessageWorker}
+                  disabled={!workerDetails.data.email && !workerDetails.data.phoneNumber}
+                >
                   <MessageCircle className="w-4 h-4 mr-2" />
                   Send Message
                 </Button>
-                <Button variant="outline" className="w-full justify-start">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={handleContactWorker}
+                  disabled={!workerDetails.data.phoneNumber}
+                >
                   <Phone className="w-4 h-4 mr-2" />
-                  Contact Worker
+                  Call Worker
                 </Button>
                 <Button variant="outline" className="w-full justify-start">
                   <Briefcase className="w-4 h-4 mr-2" />
@@ -699,4 +705,4 @@ export default function WorkerProfilePage() {
       </div>
     </div>
   );
-}
+} 
